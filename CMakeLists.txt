@@ -26,6 +26,8 @@ find_package(Boost COMPONENTS program_options filesystem REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
+add_subdirectory(thirdparty/lc0 EXCLUDE_FROM_ALL)
+
 if (NOT APPLE)
     find_package(OpenMP)
     if (OPENMP_FOUND OR OPENMP_CXX_FOUND)
@@ -35,14 +37,16 @@ endif()
 
 set(SOURCE_FILES
     src/main.cpp
+    src/controller.cpp
 )
 
 set(LIB_LIST
     ${Boost_LIBRARIES}
     drogon
+    lc0
 )
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
-
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/lc0/src")
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB_LIST})

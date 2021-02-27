@@ -34,10 +34,10 @@
 #include <cerrno>
 #include <fstream>
 
-#include "bitboard.h"
-#include "board.h"
-#include "exception.h"
-#include "logging.h"
+#include "chess/bitboard.h"
+#include "chess/board.h"
+#include "utils/exception.h"
+#include "utils/logging.h"
 
 namespace lczero {
 

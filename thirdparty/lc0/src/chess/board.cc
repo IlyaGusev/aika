@@ -25,7 +25,7 @@
   Program grant you additional permission to convey the resulting work.
 */
 
-#include "board.h"
+#include "chess/board.h"
 
 #include <algorithm>
 #include <cctype>
@@ -34,7 +34,7 @@
 #include <sstream>
 #include <iostream>
 
-#include "exception.h"
+#include "utils/exception.h"
 
 #if not defined(NO_PEXT)
 // Include header for pext instruction.

@@ -30,8 +30,8 @@
 #include <cassert>
 #include <string>
 
-#include "bitboard.h"
-#include "hashcat.h"
+#include "chess/bitboard.h"
+#include "utils/hashcat.h"
 
 namespace lczero {
 

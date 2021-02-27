@@ -25,9 +25,9 @@
   Program grant you additional permission to convey the resulting work.
 */
 
-#include "bitboard.h"
+#include "chess/bitboard.h"
 
-#include "exception.h"
+#include "utils/exception.h"
 
 namespace lczero {
 
