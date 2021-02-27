@@ -1,7 +1,10 @@
+#include <algorithm>
 #include <string>
+#include <random>
 
 #include <boost/program_options.hpp>
 #include <drogon/HttpController.h>
+#include <lc0/src/pgn.h>
 
 class TController : public drogon::HttpController<TController, /* AutoCreation */ false> {
 public:
@@ -20,8 +23,33 @@ void TController::MakeMove(
     std::function<void(const drogon::HttpResponsePtr&)>&& callback
 ) const {
     std::string pgn = req->getParameter("pgn");
+    lczero::PgnReader reader;
+    lczero::ChessBoard board{lczero::ChessBoard::kStartposFen};
+    lczero::MoveList game;
+    std::cerr << "PGN: " << pgn << std::endl;
+    reader.ParseLineSimple(pgn, board, game);
+    lczero::MoveList legalMoves = board.GenerateLegalMoves();
+
+    lczero::MoveList goodMoves;
+    std::sample(
+        legalMoves.begin(), legalMoves.end(),
+        std::back_inserter(goodMoves), 1,
+        std::mt19937{std::random_device{}()}
+    );
+
+    std::string bestMove = goodMoves.at(0).as_string();
+    // Board for black is mirrored
+    if (game.size() % 2 == 1) {
+        for (size_t i = 0; i < bestMove.size(); i++) {
+            if (bestMove[i] - '0' >= 1 && bestMove[i] - '0' <= 8) {
+                size_t num = static_cast<size_t>(bestMove[i] - '0');
+                bestMove[i] = static_cast<char>(9 - num) + '0';
+            }
+        }
+    }
+    std::cerr << bestMove << std::endl;
     Json::Value ret;
-    ret["pgn"] = pgn;
+    ret["best_move"] = bestMove;
     auto resp = drogon::HttpResponse::newHttpJsonResponse(ret);
     callback(resp);
 }
@@ -44,6 +72,8 @@ int main(int argc, char** argv) {
 
     std::string host = vm["host"].as<std::string>();
     uint32_t port = vm["port"].as<uint32_t>();
+
+    lczero::InitializeMagicBitboards();
 
     drogon::app()
         .setLogLevel(trantor::Logger::kTrace)

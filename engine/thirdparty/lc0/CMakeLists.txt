@@ -35,9 +35,6 @@ endif()
 
 set(SOURCE_FILES
     src/main.cpp
-    thirdparty/lc0/src/board.cc
-    thirdparty/lc0/src/bitboard.cc
-    thirdparty/lc0/src/logging.cc
 )
 
 set(LIB_LIST
@@ -49,4 +46,3 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB_LIST})
-target_compile_definitions(${PROJECT_NAME} PRIVATE NO_PEXT)
