@@ -5,6 +5,9 @@ project(chess_engine)
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -Wextra -Wno-sign-compare -fno-omit-frame-pointer -fopenmp")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O2 -fsanitize=address")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -funroll-loops -Ofast -march=native")
@@ -28,21 +31,11 @@ link_directories(${Boost_LIBRARY_DIR})
 
 add_subdirectory(thirdparty/lc0 EXCLUDE_FROM_ALL)
 
-if (NOT APPLE)
-    find_package(OpenMP)
-    if (OPENMP_FOUND OR OPENMP_CXX_FOUND)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-    endif()
-endif()
-
 set(SOURCE_FILES
     src/main.cpp
     src/controller.cpp
     src/random_strategy.cpp
     src/book_strategy.cpp
-)
-
-set(LIB_LIST
 )
 
 set(LIB_LIST
