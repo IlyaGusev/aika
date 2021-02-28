@@ -38,6 +38,11 @@ endif()
 set(SOURCE_FILES
     src/main.cpp
     src/controller.cpp
+    src/random_strategy.cpp
+    src/book_strategy.cpp
+)
+
+set(LIB_LIST
 )
 
 set(LIB_LIST

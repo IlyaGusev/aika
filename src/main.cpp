@@ -3,16 +3,22 @@
 #include <drogon/drogon.h>
 
 #include <chess/board.h>
+#include <chess/pgn.h>
 
 #include "controller.h"
+#include "random_strategy.h"
+#include "book_strategy.h"
 
 namespace po = boost::program_options;
 
 int main(int argc, char** argv) {
+    lczero::InitializeMagicBitboards();
+
     po::options_description desc("options");
     desc.add_options()
         ("port", po::value<uint32_t>()->default_value(8000), "port")
         ("host", po::value<std::string>()->default_value("0.0.0.0"), "host")
+        ("book", po::value<std::string>()->default_value(""), "book")
         ;
     po::positional_options_description p;
     po::command_line_parser parser{argc, argv};
@@ -23,12 +29,11 @@ int main(int argc, char** argv) {
     po::notify(vm);
 
     std::string host = vm["host"].as<std::string>();
+    std::string book = vm["book"].as<std::string>();
     uint32_t port = vm["port"].as<uint32_t>();
 
-    lczero::InitializeMagicBitboards();
-
     drogon::app()
-        .setLogLevel(trantor::Logger::kTrace)
+        .setLogLevel(trantor::Logger::kInfo)
         .addListener(host, port)
         .setThreadNum(6)
         .setMaxConnectionNum(256)
@@ -38,8 +43,14 @@ int main(int argc, char** argv) {
         .setPipeliningRequestsNumber(0)
         .setDocumentRoot("./gui");
 
+    TStrategies strategies;
+    strategies.emplace_back(new TBookStrategy(book));
+    strategies.emplace_back(new TRandomStrategy());
+
     auto controllerPtr = std::make_shared<TController>();
+    controllerPtr->Init(std::move(strategies));
     drogon::app().registerController(controllerPtr);
+    std::cout << "Server started" << std::endl;
     drogon::app().run();
     return 0;
 }

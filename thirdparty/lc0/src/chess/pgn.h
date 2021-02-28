@@ -36,6 +36,7 @@
 
 #include "chess/bitboard.h"
 #include "chess/board.h"
+#include "chess/position.h"
 #include "utils/exception.h"
 #include "utils/logging.h"
 
@@ -160,7 +161,12 @@ public:
         }
     }
 
-    void ParseLineSimple(const std::string& line, ChessBoard& board, MoveList& game) {
+    lczero::PositionHistory ParseLineSimple(const std::string& line) {
+        lczero::PositionHistory history;
+        lczero::ChessBoard startBoard{lczero::ChessBoard::kStartposFen};
+        history.Reset(startBoard, 0, 0);
+        lczero::ChessBoard currentBoard{ChessBoard::kStartposFen};
+
         std::istringstream iss(line);
         std::string word;
         while (!iss.eof()) {
@@ -186,13 +192,12 @@ public:
             // Ignore score line.
             if (word == "1/2-1/2" || word == "1-0" || word == "0-1" || word == "*")
                 continue;
-            game.push_back(SanToMove(word, board));
-            board.ApplyMove(game.back());
-            if ((game.size() % 2) == 0) {
-                game.back().Mirror();
-            }
-            board.Mirror();
+            auto move = SanToMove(word, currentBoard);
+            currentBoard.ApplyMove(move);
+            currentBoard.Mirror();
+            history.Append(move);
         }
+        return history;
     }
 
     std::vector<Opening> GetGames() const { return games_; }
