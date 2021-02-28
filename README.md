@@ -6,6 +6,17 @@ Based on:
 
 # Build
 
+Prerequisites: CMake, Boost
+```
+sudo apt-get install cmake libboost-all-dev build-essential libjsoncpp-dev uuid-dev
+```
+
+For MacOS:
+```
+brew install boost jsoncpp ossp-uuid
+```
+
+Build commands:
 ```
 git clone https://github.com/IlyaGusev/ChessEngineTemplate/
 cd ChessEngineTemplate
