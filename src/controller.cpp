@@ -10,21 +10,6 @@ lczero::PositionHistory ReadPGN(const std::string& pgn) {
     return history;
 }
 
-std::string FixCastling(
-    const lczero::Position& position,
-    const std::string& moveString
-) {
-    bool can_000 = position.GetBoard().castlings().we_can_000();
-    bool can_00 = position.GetBoard().castlings().we_can_00();
-    if ((moveString == "e8a8" || moveString == "e1a1") && can_000) {
-        return "O-O-O";
-    }
-    if ((moveString == "e8h8" || moveString == "e1h1") && can_00) {
-        return "O-O";
-    }
-    return moveString;
-}
-
 void TController::MakeMove(
     const drogon::HttpRequestPtr& req,
     std::function<void(const drogon::HttpResponsePtr&)>&& callback
@@ -62,6 +47,8 @@ void TController::MakeMove(
         }
     }
 
+    // Fix castlings
+    bestMove = history.Last().GetBoard().GetLegacyMove(*bestMove);
     // Converting lc0 format into normal move
     if (history.Last().IsBlackToMove()) {
         bestMove->Mirror();
@@ -69,8 +56,8 @@ void TController::MakeMove(
 
     std::cerr << "Best move: " << bestMove->as_string() << std::endl;
     std::cerr << std::endl;
+
     std::string moveString = bestMove->as_string();
-    moveString = FixCastling(history.Last(), moveString);
     response["best_move"] = moveString;
     callback(drogon::HttpResponse::newHttpJsonResponse(response));
 }
