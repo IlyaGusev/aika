@@ -32,6 +32,7 @@ link_directories(${Boost_LIBRARY_DIR})
 add_subdirectory(thirdparty/lc0 EXCLUDE_FROM_ALL)
 
 set(SOURCE_FILES
+    src/evaluation.cpp
     src/main.cpp
     src/controller.cpp
     src/random_strategy.cpp

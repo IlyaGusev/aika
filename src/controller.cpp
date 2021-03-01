@@ -1,4 +1,5 @@
 #include "controller.h"
+#include "evaluation.h"
 
 #include <optional>
 #include <chess/pgn.h>
@@ -46,6 +47,8 @@ void TController::MakeMove(
             break;
         }
     }
+
+    std::cerr << "Material: " << EvaluateMaterial(history.Last()) << std::endl;
 
     // Fix castlings
     bestMove = history.Last().GetBoard().GetLegacyMove(*bestMove);
