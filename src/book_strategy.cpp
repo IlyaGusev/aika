@@ -12,7 +12,7 @@ TBookStrategy::TBookStrategy(const std::string& bookPath) {
     }
 }
 
-std::optional<lczero::Move> TBookStrategy::MakeMove(
+std::optional<TMoveInfo> TBookStrategy::MakeMove(
     const lczero::PositionHistory& history
 ) const {
     const auto& currentBoard = history.Last().GetBoard();
@@ -47,7 +47,7 @@ std::optional<lczero::Move> TBookStrategy::MakeMove(
         }
         bool isLegal = currentBoard.IsLegalMove(lastMove, currentBoard.GenerateKingAttackInfo());
         if (isLegal) {
-            return lastMove;
+            return TMoveInfo(lastMove);
         } else {
             std::cerr << "Illegal book move " << lastMove.as_string() << std::endl;
             std::cerr << currentBoard.DebugString() << std::endl;

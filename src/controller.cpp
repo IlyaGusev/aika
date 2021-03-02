@@ -23,6 +23,7 @@ void TController::MakeMove(
     const auto& history = ReadPGN(pgn);
     std::cerr << "Chess board: " << std::endl;
     std::cerr << history.Last().GetBoard().DebugString();
+    std::cerr << "Current score: " << Evaluate(history.Last()) << std::endl;
 
     lczero::GameResult result = history.ComputeGameResult();
     if (result == lczero::GameResult::BLACK_WON) {
@@ -38,29 +39,30 @@ void TController::MakeMove(
         return;
     }
 
-    std::optional<lczero::Move> bestMove;
+    std::optional<TMoveInfo> bestMove;
+    std::string strategyName;
     for (const auto& strategy : Strategies) {
         bestMove = strategy->MakeMove(history);
         if (bestMove) {
-            response["score"] = strategy->GetName();
+            strategyName = strategy->GetName();
             std::cerr << "Strategy: " << strategy->GetName() << std::endl;
             break;
         }
     }
 
-    std::cerr << "Material: " << EvaluateMaterial(history.Last()) << std::endl;
-
     // Fix castlings
-    bestMove = history.Last().GetBoard().GetLegacyMove(*bestMove);
+    bestMove->Move = history.Last().GetBoard().GetLegacyMove(bestMove->Move);
     // Converting lc0 format into normal move
     if (history.Last().IsBlackToMove()) {
-        bestMove->Mirror();
+        bestMove->Move.Mirror();
     }
 
-    std::cerr << "Best move: " << bestMove->as_string() << std::endl;
+    std::string moveString = bestMove->Move.as_string();
+    std::cerr << "Best move: " << moveString << std::endl;
     std::cerr << std::endl;
 
-    std::string moveString = bestMove->as_string();
+    response["score"] = bestMove->Score;
     response["best_move"] = moveString;
+    response["strategy"] = strategyName;
     callback(drogon::HttpResponse::newHttpJsonResponse(response));
 }

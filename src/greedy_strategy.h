@@ -2,20 +2,13 @@
 
 #include "strategy.h"
 
-#include <chess/pgn.h>
-
-class TBookStrategy : public IStrategy {
-private:
-    std::vector<lczero::Opening> Openings;
-
+class TGreedyStrategy : public IStrategy {
 public:
-    TBookStrategy(const std::string& bookPath);
-
     virtual std::optional<TMoveInfo> MakeMove(
         const lczero::PositionHistory& history
     ) const override;
 
     virtual const char* GetName() const override {
-        return "Book";
+        return "Greedy";
     }
 };

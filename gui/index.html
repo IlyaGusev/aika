@@ -73,20 +73,20 @@
                   <table class="table text-center mt-4">
                     <thead>
                       <tr>
+                        <th>Strategy</th>
                         <th>Score</th>
                         <th>Depth</th>
                         <th>Time</th>
                         <th>Nodes</th>
-                        <th>Knps</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
+                        <td id="strategy"></td>
                         <td><strong id="score" class="text-danger"></strong></td>
                         <td id="depth"></td>
                         <td id="time"></td>
                         <td id="nodes"></td>
-                        <td id="knps"></td>
                       <tr>
                     </tbody>
                   </table>
@@ -132,7 +132,7 @@
         $depth.text(data.depth);
         $time.text(data.time);
         $nodes.text(data.nodes);
-        $knps.text(Math.round(Number($nodes.text()) / parseFloat($time.text())) / 1000)
+        $strategy.text(data.strategy);
 
         // update game status
         updateStatus();
@@ -253,7 +253,7 @@
   var $depth = $('#depth');
   var $time = $('#time');
   var $nodes = $('#nodes');
-  var $knps = $('#knps')
+  var $strategy = $('#strategy');
 
   // on picking up a piece
   function onDragStart (source, piece, position, orientation) {

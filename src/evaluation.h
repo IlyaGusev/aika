@@ -2,6 +2,7 @@
 
 #include <chess/position.h>
 
-double EvaluateMaterial(
-    const lczero::Position position
+double Evaluate(
+    const lczero::Position& position,
+    bool isMirrored = false
 );

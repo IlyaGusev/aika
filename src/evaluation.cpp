@@ -26,11 +26,12 @@ constexpr std::array<double, PT_COUNT> MATERIAL_SCORES{{
     200.0
 }};
 
-double EvaluateMaterial(
-    const lczero::Position position
+double Evaluate(
+    const lczero::Position& position,
+    bool isMirrored /* = false */
 ) {
     double score = 0.0;
-    const lczero::ChessBoard& board = position.GetBoard();
+    const auto& board = isMirrored ? position.GetThemBoard() : position.GetBoard();
     for (int i = 7; i >= 0; --i) {
         for (int j = 0; j < 8; ++j) {
             if (!board.ours().get(i, j) && !board.theirs().get(i, j)) {
@@ -56,5 +57,12 @@ double EvaluateMaterial(
             }
         }
     }
+
+    static const double MOBILITY_SCORE = 0.1;
+    const auto& ourLegalMoves = board.GenerateLegalMoves();
+    const auto& theirBoard = isMirrored ? position.GetBoard() : position.GetThemBoard();
+    const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
+    score += ourLegalMoves.size() * MOBILITY_SCORE - theirLegalMoves.size() * MOBILITY_SCORE;
+
     return score;
 }

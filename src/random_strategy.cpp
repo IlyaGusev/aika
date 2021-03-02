@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <random>
 
-std::optional<lczero::Move> TRandomStrategy::MakeMove(
+std::optional<TMoveInfo> TRandomStrategy::MakeMove(
     const lczero::PositionHistory& history
 ) const {
     const auto& legalMoves = history.Last().GetBoard().GenerateLegalMoves();
@@ -16,5 +16,5 @@ std::optional<lczero::Move> TRandomStrategy::MakeMove(
         std::back_inserter(goodMoves), 1,
         std::mt19937{std::random_device{}()}
     );
-    return goodMoves.at(0);
+    return TMoveInfo(goodMoves.at(0));
 }

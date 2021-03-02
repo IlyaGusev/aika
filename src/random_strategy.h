@@ -4,7 +4,7 @@
 
 class TRandomStrategy : public IStrategy {
 public:
-    virtual std::optional<lczero::Move> MakeMove(
+    virtual std::optional<TMoveInfo> MakeMove(
         const lczero::PositionHistory& history
     ) const override;
 
