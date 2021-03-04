@@ -9,6 +9,7 @@
 #include "random_strategy.h"
 #include "book_strategy.h"
 #include "greedy_strategy.h"
+#include "negamax_strategy.h"
 
 namespace po = boost::program_options;
 
@@ -46,7 +47,7 @@ int main(int argc, char** argv) {
 
     TStrategies strategies;
     strategies.emplace_back(new TBookStrategy(book));
-    strategies.emplace_back(new TGreedyStrategy());
+    strategies.emplace_back(new TNegamaxStrategy());
 
     auto controllerPtr = std::make_shared<TController>();
     controllerPtr->Init(std::move(strategies));

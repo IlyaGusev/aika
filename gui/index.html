@@ -128,7 +128,7 @@
         board.position(game.fen());
 
         // update game info
-        $score.text(data.score);
+        $score.text(data.score.toPrecision(2));
         $depth.text(data.depth);
         $time.text(data.time);
         $nodes.text(data.nodes);

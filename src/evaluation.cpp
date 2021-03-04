@@ -30,8 +30,30 @@ double Evaluate(
     const lczero::Position& position,
     bool isMirrored /* = false */
 ) {
-    double score = 0.0;
     const auto& board = isMirrored ? position.GetThemBoard() : position.GetBoard();
+    const auto& ourLegalMoves = board.GenerateLegalMoves();
+    const auto& theirBoard = isMirrored ? position.GetBoard() : position.GetThemBoard();
+    const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
+
+    if (ourLegalMoves.empty()) {
+        if (board.IsUnderCheck()) {
+            return -MATERIAL_SCORES[PT_KING];
+        }
+        return 0.0;
+    }
+
+    if (theirLegalMoves.empty()) {
+        if (theirBoard.IsUnderCheck()) {
+            return MATERIAL_SCORES[PT_KING];
+        }
+        return 0.0;
+    }
+
+    if (!board.HasMatingMaterial() || position.GetRule50Ply() >= 100) {
+        return 0.0;
+    }
+
+    double score = 0.0;
     for (int i = 7; i >= 0; --i) {
         for (int j = 0; j < 8; ++j) {
             if (!board.ours().get(i, j) && !board.theirs().get(i, j)) {
@@ -59,10 +81,30 @@ double Evaluate(
     }
 
     static const double MOBILITY_SCORE = 0.1;
-    const auto& ourLegalMoves = board.GenerateLegalMoves();
-    const auto& theirBoard = isMirrored ? position.GetBoard() : position.GetThemBoard();
-    const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
     score += ourLegalMoves.size() * MOBILITY_SCORE - theirLegalMoves.size() * MOBILITY_SCORE;
 
     return score;
+}
+
+bool IsTerminal(
+    const lczero::Position& position,
+    bool isMirrored /* = false */
+) {
+    const auto& board = isMirrored ? position.GetThemBoard() : position.GetBoard();
+    const auto& ourLegalMoves = board.GenerateLegalMoves();
+    const auto& theirBoard = isMirrored ? position.GetBoard() : position.GetThemBoard();
+    const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
+
+    if (ourLegalMoves.empty()) {
+        return true;
+    }
+
+    if (theirLegalMoves.empty()) {
+        return true;
+    }
+
+    if (!board.HasMatingMaterial() || position.GetRule50Ply() >= 100) {
+        return true;
+    }
+    return false;
 }
