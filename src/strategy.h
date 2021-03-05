@@ -8,11 +8,28 @@
 
 struct TMoveInfo {
     lczero::Move Move;
-    double Score = 0.0;
+    int Score = 0.0;
+    size_t NodesCount = 0;
+    size_t TimeMs = 0;
+    size_t Depth = 0;
 
     TMoveInfo(const lczero::Move& move) : Move(move) {}
-    TMoveInfo(const lczero::Move& move, double score) : Move(move), Score(score) {}
-    TMoveInfo(const TMoveInfo& other) : Move(other.Move), Score(other.Score) {}
+    TMoveInfo(const lczero::Move& move, int score) : Move(move), Score(score) {}
+    TMoveInfo(const TMoveInfo& other) = default;
+    TMoveInfo& operator=(const TMoveInfo& other) = default;
+    /*TMoveInfo& operator=(const TMoveInfo& other) {
+        Move = other.Move;
+        Score = other.Score;
+        return (*this);
+    }*/
+
+    bool operator<(const TMoveInfo& other) const {
+        return Score < other.Score;
+    }
+
+    bool operator>(const TMoveInfo& other) const {
+        return !((*this) < other);
+    }
 };
 
 class IStrategy {

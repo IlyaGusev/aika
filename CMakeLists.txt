@@ -39,6 +39,7 @@ set(SOURCE_FILES
     src/book_strategy.cpp
     src/greedy_strategy.cpp
     src/negamax_strategy.cpp
+    src/pst.cpp
 )
 
 set(LIB_LIST

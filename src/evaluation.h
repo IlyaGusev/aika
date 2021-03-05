@@ -2,13 +2,14 @@
 
 #include <chess/position.h>
 
-double Evaluate(
+int Evaluate(
     const lczero::Position& position,
-    bool isMirrored = false
+    bool isMirrored = false,
+    bool usePST = true
 );
 
 bool IsTerminal(
     const lczero::Position& position,
-    bool isMirrored /* = false */
+    bool isMirrored = false
 );
 

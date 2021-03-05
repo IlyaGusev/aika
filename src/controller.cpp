@@ -1,5 +1,6 @@
 #include "controller.h"
 #include "evaluation.h"
+#include "pst.h"
 
 #include <optional>
 #include <chess/pgn.h>
@@ -24,6 +25,7 @@ void TController::MakeMove(
     std::cerr << "Chess board: " << std::endl;
     std::cerr << history.Last().GetBoard().DebugString();
     std::cerr << "Current score: " << Evaluate(history.Last()) << std::endl;
+    std::cerr << "Current PST score: " << EvaluatePST(history.Last()) << std::endl;
 
     lczero::GameResult result = history.ComputeGameResult();
     if (result == lczero::GameResult::BLACK_WON) {
@@ -64,5 +66,8 @@ void TController::MakeMove(
     response["score"] = bestMove->Score;
     response["best_move"] = moveString;
     response["strategy"] = strategyName;
+    response["nodes"] = static_cast<int>(bestMove->NodesCount);
+    response["time"] = static_cast<int>(bestMove->TimeMs);
+    response["depth"] = static_cast<int>(bestMove->Depth);
     callback(drogon::HttpResponse::newHttpJsonResponse(response));
 }

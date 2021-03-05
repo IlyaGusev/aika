@@ -4,37 +4,35 @@
 
 #include <array>
 #include <iostream>
+#include "pst.h"
 
 enum EPieceType {
-    PT_UNKNOWN = 0,
-    PT_PAWN = 1,
-    PT_ROOK = 2,
-    PT_KNIGHT = 3,
-    PT_BISHOP = 4,
-    PT_QUEEN = 5,
-    PT_KING = 6,
+    PT_UNKNOWN = -1,
+    PT_PAWN,
+    PT_ROOK,
+    PT_KNIGHT,
+    PT_BISHOP,
+    PT_QUEEN,
+    PT_KING,
     PT_COUNT
 };
 
-constexpr std::array<double, PT_COUNT> MATERIAL_SCORES{{
-    0.0,
-    1.0,
-    5.0,
-    3.0,
-    3.0,
-    9.0,
-    200.0
+constexpr std::array<int, PT_COUNT> MATERIAL_SCORES{{
+    100,
+    500,
+    300,
+    300,
+    900,
+    20000
 }};
 
-double Evaluate(
+int Evaluate(
     const lczero::Position& position,
-    bool isMirrored /* = false */
+    bool isMirrored /* = false */,
+    bool usePST /* = true */
 ) {
     const auto& board = isMirrored ? position.GetThemBoard() : position.GetBoard();
     const auto& ourLegalMoves = board.GenerateLegalMoves();
-    const auto& theirBoard = isMirrored ? position.GetBoard() : position.GetThemBoard();
-    const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
-
     if (ourLegalMoves.empty()) {
         if (board.IsUnderCheck()) {
             return -MATERIAL_SCORES[PT_KING];
@@ -42,6 +40,8 @@ double Evaluate(
         return 0.0;
     }
 
+    const auto& theirBoard = isMirrored ? position.GetBoard() : position.GetThemBoard();
+    const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
     if (theirLegalMoves.empty()) {
         if (theirBoard.IsUnderCheck()) {
             return MATERIAL_SCORES[PT_KING];
@@ -53,34 +53,25 @@ double Evaluate(
         return 0.0;
     }
 
-    double score = 0.0;
-    for (int i = 7; i >= 0; --i) {
-        for (int j = 0; j < 8; ++j) {
-            if (!board.ours().get(i, j) && !board.theirs().get(i, j)) {
-                continue;
-            }
-            EPieceType pieceType = PT_UNKNOWN;
-            bool isOurs = (board.ours().get(i, j));
-            if (board.pawns().get(i, j)) {
-                pieceType = PT_PAWN;
-            } else if (board.queens().get(i, j)) {
-                pieceType = PT_QUEEN;
-            } else if (board.bishops().get(i, j)) {
-                pieceType = PT_BISHOP;
-            } else if (board.rooks().get(i, j)) {
-                pieceType = PT_ROOK;
-            } else {
-                pieceType = PT_KNIGHT;
-            }
-            if (isOurs) {
-                score += MATERIAL_SCORES[pieceType];
-            } else {
-                score -= MATERIAL_SCORES[pieceType];
-            }
-        }
+    if (usePST) {
+        return EvaluatePST(position, isMirrored);
     }
 
-    static const double MOBILITY_SCORE = 0.1;
+    auto ours = board.ours();
+    auto theirs = board.theirs();
+    auto pawns = board.pawns();
+    auto queens = board.queens();
+    auto bishops = board.bishops();
+    auto rooks = board.rooks();
+    auto knights = board.knights();
+    int pawnDiff = MATERIAL_SCORES[PT_PAWN] * ((pawns & ours).count() - (pawns & theirs).count());
+    int queenDiff = MATERIAL_SCORES[PT_QUEEN] * ((queens & ours).count() - (queens & theirs).count());
+    int bishopDiff = MATERIAL_SCORES[PT_BISHOP] * ((bishops & ours).count() - (bishops & theirs).count());
+    int rookDiff = MATERIAL_SCORES[PT_ROOK] * ((rooks & ours).count() - (rooks & theirs).count());
+    int knightDiff = MATERIAL_SCORES[PT_KNIGHT] * ((knights & ours).count() - (knights & theirs).count());
+    int score = pawnDiff + queenDiff + bishopDiff + rookDiff + knightDiff;
+
+    static const int MOBILITY_SCORE = 10;
     score += ourLegalMoves.size() * MOBILITY_SCORE - theirLegalMoves.size() * MOBILITY_SCORE;
 
     return score;
