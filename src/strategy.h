@@ -13,15 +13,12 @@ struct TMoveInfo {
     size_t TimeMs = 0;
     size_t Depth = 0;
 
+    TMoveInfo() = default;
     TMoveInfo(const lczero::Move& move) : Move(move) {}
     TMoveInfo(const lczero::Move& move, int score) : Move(move), Score(score) {}
     TMoveInfo(const TMoveInfo& other) = default;
+    TMoveInfo(TMoveInfo&& other) = default;
     TMoveInfo& operator=(const TMoveInfo& other) = default;
-    /*TMoveInfo& operator=(const TMoveInfo& other) {
-        Move = other.Move;
-        Score = other.Score;
-        return (*this);
-    }*/
 
     bool operator<(const TMoveInfo& other) const {
         return Score < other.Score;

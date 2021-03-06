@@ -65,10 +65,10 @@ int Evaluate(
     auto rooks = board.rooks();
     auto knights = board.knights();
     int pawnDiff = MATERIAL_SCORES[PT_PAWN] * ((pawns & ours).count() - (pawns & theirs).count());
-    int queenDiff = MATERIAL_SCORES[PT_QUEEN] * ((queens & ours).count() - (queens & theirs).count());
-    int bishopDiff = MATERIAL_SCORES[PT_BISHOP] * ((bishops & ours).count() - (bishops & theirs).count());
-    int rookDiff = MATERIAL_SCORES[PT_ROOK] * ((rooks & ours).count() - (rooks & theirs).count());
-    int knightDiff = MATERIAL_SCORES[PT_KNIGHT] * ((knights & ours).count() - (knights & theirs).count());
+    int queenDiff = MATERIAL_SCORES[PT_QUEEN] * ((queens & ours).count_few() - (queens & theirs).count_few());
+    int bishopDiff = MATERIAL_SCORES[PT_BISHOP] * ((bishops & ours).count_few() - (bishops & theirs).count_few());
+    int rookDiff = MATERIAL_SCORES[PT_ROOK] * ((rooks & ours).count_few() - (rooks & theirs).count_few());
+    int knightDiff = MATERIAL_SCORES[PT_KNIGHT] * ((knights & ours).count_few() - (knights & theirs).count_few());
     int score = pawnDiff + queenDiff + bishopDiff + rookDiff + knightDiff;
 
     static const int MOBILITY_SCORE = 10;
@@ -95,6 +95,17 @@ bool IsTerminal(
     }
 
     if (!board.HasMatingMaterial() || position.GetRule50Ply() >= 100) {
+        return true;
+    }
+    return false;
+}
+
+bool IsCapture(const lczero::Position& position, const lczero::Move& move) {
+    const auto& board = position.GetBoard();
+    if (board.theirs().get(move.to())) {
+        return true;
+    }
+    if (board.pawns().get(move.from()) && move.from().col() != move.to().col()) {
         return true;
     }
     return false;

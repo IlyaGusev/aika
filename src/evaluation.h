@@ -13,3 +13,4 @@ bool IsTerminal(
     bool isMirrored = false
 );
 
+bool IsCapture(const lczero::Position& position, const lczero::Move& move);
