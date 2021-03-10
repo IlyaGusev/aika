@@ -192,6 +192,15 @@ class BitBoard {
     return res;
   }
 
+    lczero::BoardSquare GetNonZeroSquare() const {
+        for (std::uint8_t pos = 0; pos < 64; pos++) {
+            if (get(pos)) {
+                return BoardSquare(pos);
+            }
+        }
+        return BoardSquare();
+    }
+
   // Applies a mask to the bitboard (intersects).
   BitBoard& operator&=(const BitBoard& a) {
     board_ &= a.board_;

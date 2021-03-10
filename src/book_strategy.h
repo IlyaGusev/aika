@@ -13,7 +13,7 @@ public:
 
     virtual std::optional<TMoveInfo> MakeMove(
         const lczero::PositionHistory& history
-    ) const override;
+    ) override;
 
     virtual const char* GetName() const override {
         return "Book";

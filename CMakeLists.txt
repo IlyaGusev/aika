@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.9)
 
 project(chess_engine)
 
+include(CTest)
+
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -25,7 +27,7 @@ unset(BUILD_EXAMPLES)
 unset(BUILD_CTL)
 unset(BUILD_TESTING)
 
-find_package(Boost COMPONENTS program_options filesystem REQUIRED)
+find_package(Boost COMPONENTS program_options filesystem unit_test_framework REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
@@ -33,13 +35,15 @@ add_subdirectory(thirdparty/lc0 EXCLUDE_FROM_ALL)
 
 set(SOURCE_FILES
     src/evaluation.cpp
-    src/main.cpp
     src/controller.cpp
     src/random_strategy.cpp
     src/book_strategy.cpp
-    src/greedy_strategy.cpp
     src/negamax_strategy.cpp
     src/pst.cpp
+    src/util.cpp
+    src/search/see.cpp
+    src/search/history_heuristics.cpp
+    src/search/transposition_table.cpp
 )
 
 set(LIB_LIST
@@ -50,5 +54,17 @@ set(LIB_LIST
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/lc0/src")
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB_LIST})
+
+enable_testing()
+
+file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} tests/*.cpp)
+add_definitions(-DTEST_PATH=${CMAKE_CURRENT_SOURCE_DIR}/tests)
+foreach(testSrc ${TEST_SRCS})
+    get_filename_component(testName ${testSrc} NAME_WE)
+    add_executable(${testName} ${SOURCE_FILES} ${testSrc})
+    target_compile_definitions(${testName} PRIVATE "BOOST_TEST_DYN_LINK=1")
+    target_link_libraries(${testName} PRIVATE ${LIB_LIST})
+    add_test(NAME ${testName} COMMAND ${testName})
+endforeach(testSrc)

@@ -694,6 +694,45 @@ bool ChessBoard::ApplyMove(Move move) {
   return reset_50_moves;
 }
 
+// Can check only on your own squares
+std::optional<BoardSquare> ChessBoard::GetSmallestAttacker(BoardSquare square) const {
+    auto ours = this->ours();
+    auto theirs = this->theirs();
+    if (!ours.get(square) && !theirs.get(square)) {
+        return std::nullopt;
+    }
+    auto pawnAttackers = kPawnAttacks[square.as_int()] & theirs & pawns();
+    if (pawnAttackers.count_few() > 0) {
+        return pawnAttackers.GetNonZeroSquare();
+    }
+    auto knightAttackers = kKnightAttacks[square.as_int()] & theirs & knights();
+    if (knightAttackers.count_few() > 0) {
+        return knightAttackers.GetNonZeroSquare();
+    }
+    auto bishopAttackers = GetBishopAttacks(square, ours | theirs) & theirs & bishops();
+    if (bishopAttackers.count_few() > 0) {
+        return bishopAttackers.GetNonZeroSquare();
+    }
+    auto rookAttackers = GetRookAttacks(square, ours | theirs) & theirs & rooks();
+    if (rookAttackers.count_few() > 0) {
+        return rookAttackers.GetNonZeroSquare();
+    }
+    auto queenAttackers = GetRookAttacks(square, ours | theirs) | GetBishopAttacks(square, ours | theirs);
+    queenAttackers = queenAttackers & theirs & queens();
+    if (queenAttackers.count_few() > 0) {
+        return queenAttackers.GetNonZeroSquare();
+    }
+    auto theirKing = (theirs & kings()).GetNonZeroSquare();
+    const int row = square.row();
+    const int col = square.col();
+    const int krow = theirKing.row();
+    const int kcol = theirKing.col();
+    if (std::abs(krow - row) <= 1 && std::abs(kcol - col) <= 1) {
+        return BoardSquare(krow, kcol);
+    }
+    return std::nullopt;
+}
+
 bool ChessBoard::IsUnderAttack(BoardSquare square) const {
   const int row = square.row();
   const int col = square.col();

@@ -29,6 +29,7 @@
 
 #include <cassert>
 #include <string>
+#include <optional>
 
 #include "chess/bitboard.h"
 #include "utils/hashcat.h"
@@ -85,6 +86,8 @@ class ChessBoard {
   // Applies the move. (Only for "ours" (white)). Returns true if 50 moves
   // counter should be removed.
   bool ApplyMove(Move move);
+  // Get smallest attacker on square.
+  std::optional<BoardSquare> GetSmallestAttacker(BoardSquare square) const;
   // Checks if the square is under attack from "theirs" (black).
   bool IsUnderAttack(BoardSquare square) const;
   // Generates the king attack info used for legal move detection.

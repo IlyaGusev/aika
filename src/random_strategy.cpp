@@ -5,7 +5,7 @@
 
 std::optional<TMoveInfo> TRandomStrategy::MakeMove(
     const lczero::PositionHistory& history
-) const {
+) {
     const auto& legalMoves = history.Last().GetBoard().GenerateLegalMoves();
     if (legalMoves.empty()) {
         return std::nullopt;

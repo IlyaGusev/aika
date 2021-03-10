@@ -1,0 +1,7 @@
+{
+    "depth": 5,
+    "enable_alpha_beta": true,
+    "enable_tt": true,
+    "qsearch_depth": 10000,
+    "enable_pst": false
+}

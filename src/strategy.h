@@ -15,6 +15,7 @@ struct TMoveInfo {
 
     TMoveInfo() = default;
     TMoveInfo(const lczero::Move& move) : Move(move) {}
+    TMoveInfo(int score) : Move(), Score(score) {}
     TMoveInfo(const lczero::Move& move, int score) : Move(move), Score(score) {}
     TMoveInfo(const TMoveInfo& other) = default;
     TMoveInfo(TMoveInfo&& other) = default;
@@ -25,7 +26,11 @@ struct TMoveInfo {
     }
 
     bool operator>(const TMoveInfo& other) const {
-        return !((*this) < other);
+        return Score > other.Score;
+    }
+
+    bool operator==(const TMoveInfo& other) const {
+        return Score == other.Score && Move == other.Move;
     }
 };
 
@@ -33,7 +38,7 @@ class IStrategy {
 public:
     virtual std::optional<TMoveInfo> MakeMove(
         const lczero::PositionHistory& history
-    ) const = 0;
+    ) = 0;
 
     virtual const char* GetName() const = 0;
 };

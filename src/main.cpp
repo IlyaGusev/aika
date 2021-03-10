@@ -8,7 +8,6 @@
 #include "controller.h"
 #include "random_strategy.h"
 #include "book_strategy.h"
-#include "greedy_strategy.h"
 #include "negamax_strategy.h"
 
 namespace po = boost::program_options;
@@ -21,6 +20,7 @@ int main(int argc, char** argv) {
         ("port", po::value<uint32_t>()->default_value(8000), "port")
         ("host", po::value<std::string>()->default_value("0.0.0.0"), "host")
         ("book", po::value<std::string>()->default_value(""), "book")
+        ("search_config", po::value<std::string>()->default_value("search_config.json"), "search_config")
         ;
     po::positional_options_description p;
     po::command_line_parser parser{argc, argv};
@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
 
     std::string host = vm["host"].as<std::string>();
     std::string book = vm["book"].as<std::string>();
+    std::string search_config = vm["search_config"].as<std::string>();
     uint32_t port = vm["port"].as<uint32_t>();
 
     drogon::app()
@@ -47,7 +48,7 @@ int main(int argc, char** argv) {
 
     TStrategies strategies;
     strategies.emplace_back(new TBookStrategy(book));
-    strategies.emplace_back(new TNegamaxStrategy());
+    strategies.emplace_back(new TNegamaxStrategy(search_config));
 
     auto controllerPtr = std::make_shared<TController>();
     controllerPtr->Init(std::move(strategies));

@@ -14,7 +14,7 @@ TBookStrategy::TBookStrategy(const std::string& bookPath) {
 
 std::optional<TMoveInfo> TBookStrategy::MakeMove(
     const lczero::PositionHistory& history
-) const {
+) {
     const auto& currentBoard = history.Last().GetBoard();
     lczero::ChessBoard startBoard{lczero::ChessBoard::kStartposFen};
     for (const auto& opening : Openings) {

@@ -5,33 +5,13 @@
 
 // Based on https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 
-enum EPieceType {
-    PT_UNKNOWN = -1,
-    PT_PAWN = 0,
-    PT_KNIGHT,
-    PT_BISHOP,
-    PT_ROOK,
-    PT_QUEEN,
-    PT_KING,
-    PT_COUNT
-};
-
-enum EPhase {
-    P_MIDGAME,
-    P_ENDGAME,
-    P_COUNT
-};
-
-constexpr std::array<std::array<short, P_COUNT>, PT_COUNT> PST_VALUES = {{
-{ 82, 94 },
-{ 337, 281 },
-{ 365, 297 },
-{ 477, 512 },
-{ 1025, 936 },
-{ 0, 0 }
-}};
-
-constexpr std::array<std::array<std::array<short, 64>, P_COUNT>, PT_COUNT> PST_POSITIONS = {{
+constexpr std::array<
+    std::array<
+        std::array<short, 64>,
+        static_cast<size_t>(EGamePhase::Count)
+    >,
+    static_cast<size_t>(EPieceType::Count)
+> PST_POSITIONS = {{
 // PAWNS
 {{{
       0,   0,   0,   0,   0,   0,  0,   0,
@@ -160,10 +140,10 @@ constexpr std::array<std::array<std::array<short, 64>, P_COUNT>, PT_COUNT> PST_P
 }}}
 }};
 
-constexpr std::array<unsigned char, PT_COUNT> GAMEPHASE_INC{{0, 1, 1, 2, 4, 0}};
+constexpr std::array<unsigned char, static_cast<size_t>(EPieceType::Count)> GAMEPHASE_INC{{0, 1, 1, 2, 4, 0}};
 
-int EvaluatePST(const lczero::Position& position, bool isMirrored) {
-    const auto& board = isMirrored ? position.GetThemBoard() : position.GetBoard();
+int CalcPSTScore(const lczero::Position& position) {
+    const auto& board = position.GetBoard();
     std::array<int, 2> midgameScores;
     std::array<int, 2> endgameScores;
     midgameScores.fill(0);
@@ -172,12 +152,8 @@ int EvaluatePST(const lczero::Position& position, bool isMirrored) {
     int gamePhase = 0;
     const auto& ours = board.ours();
     const auto& theirs = board.theirs();
-    const auto& pawns = board.pawns();
-    const auto& queens = board.queens();
-    const auto& bishops = board.bishops();
-    const auto& rooks = board.rooks();
-    const auto& knights = board.knights();
-    const auto& kings = board.kings();
+    constexpr size_t midgame = static_cast<size_t>(EGamePhase::Midgame);
+    constexpr size_t endgame = static_cast<size_t>(EGamePhase::Endgame);
     for (int i = 7; i >= 0; --i) {
         for (int j = 0; j < 8; ++j) {
             bool isOurs = (ours.get(i, j));
@@ -185,22 +161,7 @@ int EvaluatePST(const lczero::Position& position, bool isMirrored) {
             if (!isOurs && !isTheirs) {
                 continue;
             }
-            EPieceType pieceType = PT_UNKNOWN;
-            if (pawns.get(i, j)) {
-                pieceType = PT_PAWN;
-            } else if (queens.get(i, j)) {
-                pieceType = PT_QUEEN;
-            } else if (bishops.get(i, j)) {
-                pieceType = PT_BISHOP;
-            } else if (rooks.get(i, j)) {
-                pieceType = PT_ROOK;
-            } else if (knights.get(i, j)) {
-                pieceType = PT_KNIGHT;
-            } else if (kings.get(i, j)) {
-                pieceType = PT_KING;
-            } else {
-                assert(false);
-            }
+            size_t pieceType = static_cast<size_t>(GetPieceType(board, lczero::BoardSquare(i, j)));
             unsigned char row = i;
             unsigned char col = j;
             if (isOurs) {
@@ -209,8 +170,8 @@ int EvaluatePST(const lczero::Position& position, bool isMirrored) {
             const unsigned char square = row * 8 + col;
             size_t side = static_cast<size_t>(isTheirs);
             //std::cerr << side << " " << static_cast<int>(square) << " " << pieceType << " " << PST_POSITIONS[pieceType][P_MIDGAME][square] << std::endl;
-            midgameScores[side] += PST_VALUES[pieceType][P_MIDGAME] + PST_POSITIONS[pieceType][P_MIDGAME][square];
-            endgameScores[side] += PST_VALUES[pieceType][P_ENDGAME] + PST_POSITIONS[pieceType][P_ENDGAME][square];
+            midgameScores[side] += MATERIAL_SCORES[pieceType][midgame] + PST_POSITIONS[pieceType][midgame][square];
+            endgameScores[side] += MATERIAL_SCORES[pieceType][endgame] + PST_POSITIONS[pieceType][endgame][square];
             gamePhase += GAMEPHASE_INC[pieceType];
         }
     }

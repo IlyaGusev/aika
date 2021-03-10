@@ -1,113 +1,198 @@
 #include "negamax_strategy.h"
 #include "evaluation.h"
+#include "search/see.h"
 
 #include <algorithm>
 #include <chrono>
 #include <iostream>
-
+#include <map>
 
 TMoveInfo TNegamaxStrategy::Search(
-    TNode& node
-) const {
-    const lczero::Position& position = node.Position;
-    const size_t depth = node.Depth;
-    const bool isCapturesOnly = node.IsCapturesOnly;
-
-    auto it = TranspositionTable.find(position);
-    if (it != TranspositionTable.end() && it->second.Depth >= depth) {
-        return it->second.BestMove;
-    }
-
-    const int staticScore = Evaluate(position);
-    if (IsTerminal(position, true) || (depth == 0 && isCapturesOnly)) {
-        TMoveInfo bestMove{lczero::Move(), staticScore};
-        InsertTransposition(node, bestMove);
-        return bestMove;
-    }
-    if (depth == 0 && !isCapturesOnly) {
-        TNode quiscenceNode(position, 1, node.Alpha, node.Beta, true);
-        TMoveInfo bestMove = Search(quiscenceNode);
-        node.TreeNodesCount += quiscenceNode.TreeNodesCount;
-        InsertTransposition(node, bestMove);
-        return bestMove;
-    }
-
+    TNode& node,
+    int alpha,
+    int beta
+) {
+    const auto& position = node.Position;
     const auto& board = position.GetBoard();
-    const int beta = node.Beta;
-    int alpha = node.Alpha;
+    const size_t depth = node.Depth;
 
-    std::vector<TNode> children;
-    std::vector<lczero::Move> legalMoves = board.GenerateLegalMoves();
-    children.reserve(legalMoves.size());
-    for (const auto& newMove : legalMoves) {
-        if (isCapturesOnly && !IsCapture(position, newMove)) {
-            continue;
+    std::optional<TMoveInfo> moveInfo = TranspositionTable.Find(position, depth);
+    if (moveInfo) {
+        return *moveInfo;
+    }
+
+    const int staticScore = Evaluate(position, Config.EnablePST);
+    if (IsTerminal(position)) {
+        TMoveInfo moveInfo(staticScore);
+        return {staticScore};
+    }
+
+    if (depth == 0) {
+        if (Config.QuiescenceSearchDepth != 0) {
+            TNode qNode(position, Config.QuiescenceSearchDepth);
+            return QuiescenceSearch(qNode, alpha, beta);
         }
-        children.emplace_back(position, newMove, depth - 1, -beta, -alpha, isCapturesOnly);
+        return {staticScore};
+    }
+
+    std::multimap<int, TNode> children;
+    for (const auto& move : board.GenerateLegalMoves()) {
+        int score = CalcMoveOrder(position, move);
+        children.emplace(score, TNode(position, move, depth - 1));
+    }
+
+    TMoveInfo bestMoveInfo(MIN_SCORE_VALUE - 1);
+    for (auto& [_, child] : children) {
+        const auto& bestEnemyMove = Search(child, -beta, -alpha);
+        const int bestEnemyScore = bestEnemyMove.Score;
+        node.TreeNodesCount += child.TreeNodesCount;
+
+        const auto& ourMove = child.Move;
+        const int ourScore = -bestEnemyScore;
+        TMoveInfo ourMoveInfo(ourMove, ourScore);
+        //if (depth == 5) {
+        //    std::cerr << ourMove.as_string() << " " << ourScore << " " << alpha << " " << beta << " " << bestMoveInfo.Move.as_string() << " " <<  bestMoveInfo.Score << std::endl;
+        //}
+        if (Config.EnableAlphaBeta && ourScore >= beta) {
+            if (Config.EnableTT) {
+                TranspositionTable.Insert(position, ourMoveInfo, depth, TTranspositionTable::ENodeType::Cut);
+            }
+            if (!IsCapture(position, ourMove)) {
+                int side = position.IsBlackToMove();
+                EPieceType fromPiece = GetPieceType(board, ourMove.from());
+                HistoryHeuristics.Add(side, fromPiece, ourMove.to(), depth);
+            }
+            return ourMoveInfo;
+        }
+        if (ourMoveInfo > bestMoveInfo) {
+            bestMoveInfo = ourMoveInfo;
+            alpha = std::max(alpha, ourScore);
+        }
+    }
+    if (Config.EnableTT) {
+        TranspositionTable.Insert(position, bestMoveInfo, depth, TTranspositionTable::ENodeType::PV);
+    }
+    return bestMoveInfo;
+}
+
+TMoveInfo TNegamaxStrategy::QuiescenceSearch(
+    TNode& node,
+    int alpha,
+    int beta
+) {
+    const auto& position = node.Position;
+    const auto& board = position.GetBoard();
+    const size_t depth = node.Depth;
+
+    const int staticScore = Evaluate(position, Config.EnablePST);
+    if (IsTerminal(position) || (depth == 0)) {
+        return {staticScore};
+    }
+    if (Config.EnableAlphaBeta && staticScore >= beta) {
+        //return {staticScore};
+        return {beta};
+    }
+    alpha = std::max(alpha, staticScore);
+
+    std::multimap<int, TNode> children;
+    for (const auto& move : board.GenerateLegalMoves()) {
+        if (IsCapture(position, move) && EvaluateCaptureSEE(position, move) >= 0) {
+            int score = CalcMoveOrder(position, move);
+            children.emplace(score, TNode(position, move, depth - 1));
+        }
     }
 
     if (children.empty()) {
-        TMoveInfo bestMove(lczero::Move(), staticScore);
-        return bestMove;
+        return {staticScore};
     }
 
-    std::stable_sort(children.begin(), children.end(), [&](const TNode& f, const TNode& s) {
-        auto it1 = TranspositionTable.find(f.Position);
-        auto it2 = TranspositionTable.find(s.Position);
-        int score1 = (it1 != TranspositionTable.end()) ? it1->second.BestMove.Score : MAX_SCORE_VALUE;
-        int score2 = (it2 != TranspositionTable.end()) ? it2->second.BestMove.Score : MAX_SCORE_VALUE;
-        return score1 < score2;
-    });
-
-    TMoveInfo bestMove(lczero::Move(), MIN_SCORE_VALUE);
-    for (auto& child : children) {
-        child.Beta = -alpha;
-        TMoveInfo enemyMove = Search(child);
-        TMoveInfo ourMove(child.Move, -enemyMove.Score);
+    TMoveInfo bestMoveInfo(MIN_SCORE_VALUE - 1);
+    for (auto& [_, child] : children) {
+        const auto& bestEnemyMove = QuiescenceSearch(child, -beta, -alpha);
+        const int bestEnemyScore = bestEnemyMove.Score;
         node.TreeNodesCount += child.TreeNodesCount;
-        bestMove = std::max(bestMove, ourMove);
-        alpha = std::max(alpha, ourMove.Score);
-        if (alpha > beta) {
-            break;
+
+        const auto& ourMove = child.Move;
+        const int ourScore = -bestEnemyScore;
+        TMoveInfo ourMoveInfo(ourMove, ourScore);
+
+        if (Config.EnableAlphaBeta && ourScore >= beta) {
+            //return ourMoveInfo;
+            return {ourMove, beta};
+        }
+        if (ourMoveInfo > bestMoveInfo) {
+            bestMoveInfo = ourMoveInfo;
+            alpha = std::max(alpha, ourScore);
         }
     }
-    InsertTransposition(node, bestMove);
-    return bestMove;
+    return bestMoveInfo;
 }
 
-void TNegamaxStrategy::InsertTransposition(
-    const TNode& node,
-    const TMoveInfo& bestMove
+int TNegamaxStrategy::CalcMoveOrder(
+    const lczero::Position& position,
+    const lczero::Move& move
 ) const {
-    if (node.IsCapturesOnly) {
-        return;
+    const int stageDiff = 10000;
+
+    // Hash move
+    int stage = -1;
+    std::optional<TMoveInfo> bm = TranspositionTable.Find(position);
+    if (bm && bm->Move == move) {
+        return stage * stageDiff;
     }
-    auto it = TranspositionTable.find(node.Position);
-    if (it == TranspositionTable.end() || it->second.Depth < node.Depth) {
-        TranspositionTable.insert_or_assign(node.Position, TTTNode(node.Depth, bestMove));
+
+    // Promotions
+    stage = 0;
+    if (move.promotion() != lczero::Move::Promotion::None) {
+        return stage * stageDiff;
     }
+
+    // Captures
+    if (IsCapture(position, move)) {
+        int captureValue = EvaluateCaptureSEE(position, move);
+        if (captureValue > 0) {
+            stage = 1;
+        } else if (captureValue == 0) {
+            stage = 2;
+        } else {
+            stage = 4;
+        }
+        return stage * stageDiff - captureValue;
+    }
+
+    // History heuristics
+    stage = 3;
+    EPieceType fromPiece = GetPieceType(position.GetBoard(), move.from());
+    int side = position.IsBlackToMove();
+    int historyScore = HistoryHeuristics.Get(side, fromPiece, move.to());
+    if (historyScore != 0) {
+        return stage * stageDiff - historyScore;
+    }
+
+    stage = 5;
+    return stage * stageDiff;
 }
 
 std::optional<TMoveInfo> TNegamaxStrategy::MakeMove(
     const lczero::PositionHistory& history
-) const {
-    TranspositionTable.reserve(10000000);
-    const size_t DEPTH = 6;
+) {
     auto timerStart = std::chrono::high_resolution_clock::now();
     size_t currentDepth = 0;
+    HistoryHeuristics.Clear();
     TMoveInfo move;
-    while (currentDepth <= DEPTH) {
+    while (currentDepth <= Config.Depth) {
         TNode startNode{
             history.Last(),
             currentDepth,
-            MIN_SCORE_VALUE,
-            MAX_SCORE_VALUE
         };
-        move = Search(startNode);
+        move = Search(startNode, MIN_SCORE_VALUE, MAX_SCORE_VALUE);
         auto timerEnd = std::chrono::high_resolution_clock::now();
         move.NodesCount = startNode.TreeNodesCount;
         move.TimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(timerEnd - timerStart).count();
         move.Depth = currentDepth;
+        if (move.Score == MIN_SCORE_VALUE || move.Score == MAX_SCORE_VALUE) {
+            break;
+        }
         currentDepth += 1;
     }
     return move;

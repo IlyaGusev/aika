@@ -24,8 +24,8 @@ void TController::MakeMove(
     const auto& history = ReadPGN(pgn);
     std::cerr << "Chess board: " << std::endl;
     std::cerr << history.Last().GetBoard().DebugString();
-    std::cerr << "Current score: " << Evaluate(history.Last()) << std::endl;
-    std::cerr << "Current PST score: " << EvaluatePST(history.Last()) << std::endl;
+    std::cerr << "Current material score: " << CalcMaterialScore(history.Last()) << std::endl;
+    std::cerr << "Current PST score: " << CalcPSTScore(history.Last()) << std::endl;
 
     lczero::GameResult result = history.ComputeGameResult();
     if (result == lczero::GameResult::BLACK_WON) {
