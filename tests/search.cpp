@@ -26,7 +26,7 @@ TMoveInfo GetFenBestMove(const std::string& fen, int depth = 1, bool useAllFeatu
     }
     if (useAllFeatures) {
         config.EnableTT = true;
-        config.EnablePST = false;
+        config.EnablePST = true;
         config.QuiescenceSearchDepth = 10000;
     }
     TNegamaxStrategy strategy(config);

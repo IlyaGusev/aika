@@ -169,7 +169,6 @@ int CalcPSTScore(const lczero::Position& position) {
             }
             const unsigned char square = row * 8 + col;
             size_t side = static_cast<size_t>(isTheirs);
-            //std::cerr << side << " " << static_cast<int>(square) << " " << pieceType << " " << PST_POSITIONS[pieceType][P_MIDGAME][square] << std::endl;
             midgameScores[side] += MATERIAL_SCORES[pieceType][midgame] + PST_POSITIONS[pieceType][midgame][square];
             endgameScores[side] += MATERIAL_SCORES[pieceType][endgame] + PST_POSITIONS[pieceType][endgame][square];
             gamePhase += GAMEPHASE_INC[pieceType];
@@ -177,11 +176,10 @@ int CalcPSTScore(const lczero::Position& position) {
     }
     int mgScore = midgameScores[0] - midgameScores[1];
     int egScore = endgameScores[0] - endgameScores[1];
-    //std::cerr << "MG: " << mgScore << " ";
-    //std::cerr << "EG: " << egScore << " ";
 
     int mgPhase = gamePhase;
     if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
     int egPhase = 24 - mgPhase;
+
     return (mgScore * mgPhase + egScore * egPhase) / 24;
 }
