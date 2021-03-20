@@ -1,10 +1,14 @@
-#include "controller.h"
-#include "evaluation.h"
-#include "pst.h"
+#include <controller.h>
 
-#include <optional>
 #include <chess/pgn.h>
 #include <chess/position.h>
+
+#include <evaluation.h>
+#include <pst.h>
+#include <util.h>
+
+#include <optional>
+#include <string>
 
 lczero::PositionHistory ReadPGN(const std::string& pgn) {
     lczero::PgnReader reader;
@@ -19,21 +23,21 @@ void TController::MakeMove(
     Json::Value response;
 
     std::string pgn = req->getParameter("pgn");
-    std::cerr << "PGN: " << pgn << std::endl;
+    LOG_DEBUG("PGN: " << pgn);
 
     const auto& history = ReadPGN(pgn);
-    std::cerr << "Chess board: " << std::endl;
-    std::cerr << history.Last().GetBoard().DebugString();
-    std::cerr << "Current material score: " << CalcMaterialScore(history.Last()) << std::endl;
-    std::cerr << "Current PST score: " << CalcPSTScore(history.Last()) << std::endl;
+    LOG_DEBUG("Chess board: ");
+    LOG_DEBUG(history.Last().GetBoard().DebugString());
+    LOG_DEBUG("Current material score: " << CalcMaterialScore(history.Last()));
+    LOG_DEBUG("Current PST score: " << CalcPSTScore(history.Last()));
 
     lczero::GameResult result = history.ComputeGameResult();
     if (result == lczero::GameResult::BLACK_WON) {
-        std::cerr << "Black won" << std::endl;
+        LOG_DEBUG("Black won");
     } else if (result == lczero::GameResult::WHITE_WON) {
-        std::cerr << "White won" << std::endl;
+        LOG_DEBUG("White won");
     } else if (result == lczero::GameResult::DRAW) {
-        std::cerr << "Draw" << std::endl;
+        LOG_DEBUG("Draw");
     }
     if (result != lczero::GameResult::UNDECIDED) {
         response["best_move"] = "#";
@@ -47,21 +51,21 @@ void TController::MakeMove(
         bestMove = strategy->MakeMove(history);
         if (bestMove) {
             strategyName = strategy->GetName();
-            std::cerr << "Strategy: " << strategy->GetName() << std::endl;
+            LOG_DEBUG("Strategy: " << strategy->GetName());
             break;
         }
     }
 
     // Fix castlings
-    bestMove->Move = history.Last().GetBoard().GetLegacyMove(bestMove->Move);
+    const auto& position = history.Last();
+    bestMove->Move = position.GetBoard().GetLegacyMove(bestMove->Move);
     // Converting lc0 format into normal move
-    if (history.Last().IsBlackToMove()) {
+    if (position.IsBlackToMove()) {
         bestMove->Move.Mirror();
     }
 
     std::string moveString = bestMove->Move.as_string();
-    std::cerr << "Best move: " << moveString << std::endl;
-    std::cerr << std::endl;
+    LOG_DEBUG("Best move: " << moveString << std::endl);
 
     response["score"] = bestMove->Score;
     response["best_move"] = moveString;

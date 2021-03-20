@@ -1,9 +1,11 @@
-#include "see.h"
+#include <search/see.h>
 
-#include "../src/evaluation.h"
+#include <evaluation.h>
+#include <util.h>
 
+#include <algorithm>
 #include <optional>
-#include <iostream>
+#include <utility>
 
 int EvaluateStaticExchange(
     const lczero::Position& position,
@@ -24,13 +26,20 @@ int EvaluateStaticExchange(
     fromSquare.Mirror();
 
     lczero::Move move(fromSquare, toSquare);
-    assert(IsCapture(position, move));
-    int capturedPieceValue = GetPieceValue(position.GetBoard(), toSquare);
+    ENSURE(UNLIKELY(IsCapture(position, move)),
+        "Not a capture in SEE, move: " << move.as_string()
+        << position.DebugString());
+    const EPieceType toPiece = GetPieceType(position.GetBoard(), toSquare);
+    int capturedPieceValue = GetPieceValue(EPieceType::Pawn);
+    if (LIKELY(toPiece != EPieceType::Unknown)) {
+        capturedPieceValue = GetPieceValue(position.GetBoard(), toSquare);
+    }
 
     // newPosition = WHITE
     lczero::Position newPosition(position, move);
     toSquare.Mirror();
-    return std::max(0, capturedPieceValue - EvaluateStaticExchange(newPosition, toSquare));
+    const int nestedSEEValue = EvaluateStaticExchange(newPosition, toSquare);
+    return std::max(0, capturedPieceValue - nestedSEEValue);
 }
 
 int EvaluateCaptureSEE(
@@ -39,7 +48,12 @@ int EvaluateCaptureSEE(
 ) {
     const auto& board = position.GetBoard();
     auto toSquare =  move.to();
-    int toValue = GetPieceValue(board, toSquare);
+
+    const EPieceType toPiece = GetPieceType(board, toSquare);
+    int toValue = GetPieceValue(EPieceType::Pawn);
+    if (LIKELY(toPiece != EPieceType::Unknown)) {
+        toValue = GetPieceValue(board, toSquare);
+    }
     lczero::Position newPosition(position, move);
     toSquare.Mirror();
     return toValue - EvaluateStaticExchange(newPosition, toSquare);

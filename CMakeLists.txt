@@ -11,7 +11,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -Wextra -Wno-sign-compare -fno-omit-frame-pointer")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O2 -fsanitize=address")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O2 -fsanitize=address -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-sanitize-recover")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -funroll-loops -Ofast -march=native")
 
 set(BUILD_TESTING 0)
@@ -38,9 +38,10 @@ set(SOURCE_FILES
     src/controller.cpp
     src/random_strategy.cpp
     src/book_strategy.cpp
-    src/negamax_strategy.cpp
+    src/search_strategy.cpp
     src/pst.cpp
     src/util.cpp
+    src/search/config.cpp
     src/search/see.cpp
     src/search/history_heuristics.cpp
     src/search/transposition_table.cpp
@@ -53,6 +54,7 @@ set(LIB_LIST
 )
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/lc0/src")
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB_LIST})

@@ -1,14 +1,23 @@
-#include "history_heuristics.h"
+#include <search/history_heuristics.h>
 
 THistoryHeuristics::THistoryHeuristics() {
     Clear();
 }
 
-void THistoryHeuristics::Add(int side, EPieceType piece, const lczero::BoardSquare& square, int depth) {
+void THistoryHeuristics::Add(
+    int side,
+    EPieceType piece,
+    const lczero::BoardSquare& square,
+    int depth
+) {
     History[side][static_cast<size_t>(piece)][square.as_int()] += depth * depth;
 }
 
-int THistoryHeuristics::Get(int side, EPieceType piece, const lczero::BoardSquare& square) const {
+int THistoryHeuristics::Get(
+    int side,
+    EPieceType piece,
+    const lczero::BoardSquare& square
+) const {
     return History.at(side).at(static_cast<size_t>(piece)).at(square.as_int());
 }
 

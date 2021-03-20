@@ -1,14 +1,15 @@
-#include <string>
-#include <boost/program_options.hpp>
-#include <drogon/drogon.h>
-
 #include <chess/board.h>
 #include <chess/pgn.h>
 
-#include "controller.h"
-#include "random_strategy.h"
-#include "book_strategy.h"
-#include "negamax_strategy.h"
+#include <controller.h>
+#include <random_strategy.h>
+#include <book_strategy.h>
+#include <search_strategy.h>
+
+#include <boost/program_options.hpp>
+#include <drogon/drogon.h>
+
+#include <string>
 
 namespace po = boost::program_options;
 
@@ -48,7 +49,7 @@ int main(int argc, char** argv) {
 
     TStrategies strategies;
     strategies.emplace_back(new TBookStrategy(book));
-    strategies.emplace_back(new TNegamaxStrategy(search_config));
+    strategies.emplace_back(new TSearchStrategy(search_config));
 
     auto controllerPtr = std::make_shared<TController>();
     controllerPtr->Init(std::move(strategies));

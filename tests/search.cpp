@@ -3,14 +3,15 @@
 #define STR_EXPAND(tok) #tok
 #define STR(tok) STR_EXPAND(tok)
 
-#include "../src/negamax_strategy.h"
-#include "../src/evaluation.h"
-
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
 #include <chess/pgn.h>
+
+#include <search_strategy.h>
+#include <evaluation.h>
+#include <util.h>
 
 #include <iostream>
 
@@ -19,7 +20,7 @@ TMoveInfo GetFenBestMove(const std::string& fen, int depth = 1, bool useAllFeatu
     lczero::PositionHistory history;
     history.Reset(board, 0, 0);
 
-    TNegamaxStrategy::TConfig config;
+    TSearchConfig config;
     config.Depth = depth;
     if (depth >= 2) {
         config.EnableAlphaBeta = true;
@@ -29,7 +30,7 @@ TMoveInfo GetFenBestMove(const std::string& fen, int depth = 1, bool useAllFeatu
         config.EnablePST = true;
         config.QuiescenceSearchDepth = 10000;
     }
-    TNegamaxStrategy strategy(config);
+    TSearchStrategy strategy(config);
 
     auto bestMove = strategy.MakeMove(history);
     return *bestMove;
@@ -59,7 +60,8 @@ std::vector<TEPDRecord> ParseSimpleEPD(const std::string& fileName) {
         auto amPos = fenWithMoves.find("am");
         bool isBestMove = bmPos != std::string::npos;
         bool isAvoidMove = amPos != std::string::npos;
-        assert(isBestMove && !isAvoidMove || isAvoidMove && !isBestMove);
+        ENSURE((isBestMove && !isAvoidMove) || (isAvoidMove && !isBestMove),
+            "EPD not bm or am");
         auto pos = isBestMove ? bmPos : amPos;
 
         TEPDRecord record;
@@ -112,15 +114,15 @@ BOOST_AUTO_TEST_CASE( alpha_beta )
     lczero::ChessBoard startBoard{lczero::ChessBoard::kStartposFen};
     history.Reset(startBoard, 0, 0);
 
-    TNegamaxStrategy::TConfig config1;
+    TSearchConfig config1;
     config1.Depth = 3;
     config1.EnableAlphaBeta = false;
-    TNegamaxStrategy strategy1(config1);
+    TSearchStrategy strategy1(config1);
 
-    TNegamaxStrategy::TConfig config2;
+    TSearchConfig config2;
     config2.Depth = 3;
     config2.EnableAlphaBeta = true;
-    TNegamaxStrategy strategy2(config2);
+    TSearchStrategy strategy2(config2);
 
     auto bestMove1 = strategy1.MakeMove(history);
     auto bestMove2 = strategy2.MakeMove(history);

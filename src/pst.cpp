@@ -1,4 +1,4 @@
-#include "pst.h"
+#include <pst.h>
 
 #include <array>
 #include <iostream>
@@ -7,7 +7,7 @@
 
 constexpr std::array<
     std::array<
-        std::array<short, 64>,
+        std::array<int, 64>,
         static_cast<size_t>(EGamePhase::Count)
     >,
     static_cast<size_t>(EPieceType::Count)
@@ -140,7 +140,8 @@ constexpr std::array<
 }}}
 }};
 
-constexpr std::array<unsigned char, static_cast<size_t>(EPieceType::Count)> GAMEPHASE_INC{{0, 1, 1, 2, 4, 0}};
+constexpr std::array<unsigned char, static_cast<size_t>(EPieceType::Count)>
+    GAMEPHASE_INC{{0, 1, 1, 2, 4, 0}};
 
 int CalcPSTScore(const lczero::Position& position) {
     const auto& board = position.GetBoard();
@@ -169,8 +170,10 @@ int CalcPSTScore(const lczero::Position& position) {
             }
             const unsigned char square = row * 8 + col;
             size_t side = static_cast<size_t>(isTheirs);
-            midgameScores[side] += MATERIAL_SCORES[pieceType][midgame] + PST_POSITIONS[pieceType][midgame][square];
-            endgameScores[side] += MATERIAL_SCORES[pieceType][endgame] + PST_POSITIONS[pieceType][endgame][square];
+            midgameScores[side] += MATERIAL_SCORES[pieceType][midgame] +
+                PST_POSITIONS[pieceType][midgame][square];
+            endgameScores[side] += MATERIAL_SCORES[pieceType][endgame] +
+                PST_POSITIONS[pieceType][endgame][square];
             gamePhase += GAMEPHASE_INC[pieceType];
         }
     }

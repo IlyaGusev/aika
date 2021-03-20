@@ -1,10 +1,10 @@
 #pragma once
 
-#include <array>
-
 #include <chess/bitboard.h>
 
-#include "../util.h"
+#include <util.h>
+
+#include <array>
 
 class THistoryHeuristics {
 private:

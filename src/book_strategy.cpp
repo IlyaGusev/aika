@@ -1,14 +1,15 @@
-#include "book_strategy.h"
+#include <book_strategy.h>
+#include <util.h>
 
-#include <iostream>
+#include <string>
 
 TBookStrategy::TBookStrategy(const std::string& bookPath) {
     if (!bookPath.empty()) {
-        std::cerr << "Reading opening database..." << std::endl;
+        LOG_DEBUG("Reading opening database...");
         lczero::PgnReader reader;
         reader.AddPgnFile(bookPath);
         Openings = reader.GetGames();
-        std::cerr << Openings.size() << " openings loaded" << std::endl;
+        LOG_DEBUG(Openings.size() << " openings loaded");
     }
 }
 
@@ -37,7 +38,9 @@ std::optional<TMoveInfo> TBookStrategy::MakeMove(
             }
             lastMove = bookMove;
             bookHistory.Append(bookMove);
-            if (bookHistory.GetPositionAt(i).GetBoard().Hash() != history.GetPositionAt(i).GetBoard().Hash()) {
+            auto historyHash = bookHistory.GetPositionAt(i).GetBoard().Hash();
+            auto realHash = history.GetPositionAt(i).GetBoard().Hash();
+            if (historyHash != realHash) {
                 hasSamePrefix = false;
                 break;
             }
@@ -45,12 +48,14 @@ std::optional<TMoveInfo> TBookStrategy::MakeMove(
         if (!hasSamePrefix) {
             continue;
         }
-        bool isLegal = currentBoard.IsLegalMove(lastMove, currentBoard.GenerateKingAttackInfo());
+        bool isLegal = currentBoard.IsLegalMove(
+            lastMove, currentBoard.GenerateKingAttackInfo()
+        );
         if (isLegal) {
             return TMoveInfo(lastMove);
         } else {
-            std::cerr << "Illegal book move " << lastMove.as_string() << std::endl;
-            std::cerr << currentBoard.DebugString() << std::endl;
+            LOG_ERROR("Illegal book move " << lastMove.as_string());
+            LOG_ERROR(currentBoard.DebugString());
         }
     }
     return std::nullopt;

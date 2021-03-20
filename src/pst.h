@@ -2,12 +2,12 @@
 
 #include <chess/position.h>
 
+#include <util.h>
+
 #include <array>
 
-#include "util.h"
-
 constexpr std::array<
-    std::array<short, static_cast<size_t>(EGamePhase::Count)>,
+    std::array<int, static_cast<size_t>(EGamePhase::Count)>,
     static_cast<size_t>(EPieceType::Count)
 > MATERIAL_SCORES = {{
 { 82, 94 },

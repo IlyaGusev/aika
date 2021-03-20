@@ -3,12 +3,12 @@
 #define STR_EXPAND(tok) #tok
 #define STR(tok) STR_EXPAND(tok)
 
-#include "../src/util.h"
-#include "../src/pst.h"
-
 #include <boost/test/unit_test.hpp>
 
 #include <chess/position.h>
+
+#include <util.h>
+#include <pst.h>
 
 #include <iostream>
 

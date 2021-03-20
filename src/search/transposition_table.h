@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../strategy.h"
-#include "../util.h"
+#include <strategy.h>
+#include <util.h>
 
 #include <unordered_map>
 
@@ -30,7 +30,10 @@ public:
     };
 
     struct TPositionEqualFn {
-        bool operator() (const lczero::Position& p1, const lczero::Position& p2) const {
+        bool operator() (
+            const lczero::Position& p1,
+            const lczero::Position& p2
+        ) const {
             return p1.GetBoard() == p2.GetBoard() && p1.GetRepetitions() == p2.GetRepetitions();
         }
     };

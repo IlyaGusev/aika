@@ -3,9 +3,9 @@
 #define STR_EXPAND(tok) #tok
 #define STR(tok) STR_EXPAND(tok)
 
-#include "../src/util.h"
-#include "../src/evaluation.h"
-#include "../src/search/see.h"
+#include <evaluation.h>
+#include <search/see.h>
+#include <util.h>
 
 #include <boost/test/unit_test.hpp>
 

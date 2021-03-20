@@ -1,4 +1,4 @@
-#include "transposition_table.h"
+#include <search/transposition_table.h>
 
 void TTranspositionTable::Insert(
     const lczero::Position& position,

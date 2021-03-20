@@ -1,15 +1,10 @@
-#include "util.h"
-
-#include <iostream>
+#include <util.h>
 
 bool IsTerminal(
-    const lczero::Position& position
+    const lczero::Position& position,
+    const std::vector<lczero::Move>& ourLegalMoves,
+    const std::vector<lczero::Move>& theirLegalMoves
 ) {
-    const auto& board = position.GetBoard();
-    const auto& ourLegalMoves = board.GenerateLegalMoves();
-    const auto& theirBoard = position.GetThemBoard();
-    const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
-
     if (ourLegalMoves.empty()) {
         return true;
     }
@@ -18,7 +13,12 @@ bool IsTerminal(
         return true;
     }
 
-    if (!board.HasMatingMaterial() || !theirBoard.HasMatingMaterial() || position.GetRule50Ply() >= 100) {
+    const auto& board = position.GetBoard();
+    const auto& theirBoard = position.GetThemBoard();
+    const bool weHasMatingMaterial = board.HasMatingMaterial();
+    const bool theyHasMatingMaterial = theirBoard.HasMatingMaterial();
+    const bool isRule50 = position.GetRule50Ply() >= 100;
+    if (!weHasMatingMaterial || !theyHasMatingMaterial || isRule50) {
         return true;
     }
 
@@ -33,6 +33,7 @@ bool IsCapture(
     if (board.theirs().get(move.to())) {
         return true;
     }
+    // En passant
     if (board.pawns().get(move.from()) && move.from().col() != move.to().col()) {
         return true;
     }
