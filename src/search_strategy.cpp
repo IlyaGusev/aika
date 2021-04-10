@@ -44,12 +44,14 @@ TMoveInfo TSearchStrategy::Search(
 
     std::multimap<int, TSearchNode> children;
     for (const auto& move : ourLegalMoves) {
-        int score = CalcMoveOrder(position, move, ply);
+        int score = CalcMoveOrder(position, move, node.Move);
         children.emplace(score, TSearchNode(position, move, depth - 1, ply + 1));
     }
 
     TMoveInfo bestMoveInfo(MIN_SCORE_VALUE - 1);
+    size_t movesCount = 0;
     for (auto& [_, child] : children) {
+        UNUSED(_);
         const auto& bestEnemyMove = Search(child, -beta, -alpha);
         const int bestEnemyScore = bestEnemyMove.Score;
         node.TreeNodesCount += child.TreeNodesCount;
@@ -62,14 +64,20 @@ TMoveInfo TSearchStrategy::Search(
                 TranspositionTable.Insert(position, ourMoveInfo, depth,
                     TTranspositionTable::ENodeType::Cut);
             }
-            if (!IsCapture(position, ourMove)) {
-                KillerMoves[ply] = ourMove;
+            if (!IsCapture(position, ourMove) && !IsPromotion(position, ourMove)) {
                 int side = position.IsBlackToMove();
                 EPieceType fromPiece = GetPieceType(board, ourMove.from());
-                HistoryHeuristics.Add(side, fromPiece, ourMove.to(), depth);
+                HistoryHeuristics.Add(side, fromPiece, ourMove, depth);
+                HistoryHeuristics.AddCounterMove(node.Move, ourMove);
             }
+            //if (movesCount > 10) {
+            //    std::cerr << position.DebugString();
+            //    std::cerr << ourMove.as_string() << std::endl;
+            //    std::cerr << movesCount << std::endl;
+            //}
             return ourMoveInfo;
         }
+        movesCount += 1;
         if (ourMoveInfo > bestMoveInfo) {
             bestMoveInfo = ourMoveInfo;
             alpha = std::max(alpha, ourScore);
@@ -113,7 +121,7 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
             continue;
         }
         if (EvaluateCaptureSEE(position, move) >= 0) {
-            int score = CalcMoveOrder(position, move, ply);
+            int score = CalcMoveOrder(position, move, node.Move);
             children.emplace(score, TSearchNode(position, move, depth - 1, ply + 1));
         }
     }
@@ -124,6 +132,7 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
 
     TMoveInfo bestMoveInfo(MIN_SCORE_VALUE - 1);
     for (auto& [_, child] : children) {
+        UNUSED(_);
         const auto& bestEnemyMove = QuiescenceSearch(child, -beta, -alpha);
         const int bestEnemyScore = bestEnemyMove.Score;
         node.TreeNodesCount += child.TreeNodesCount;
@@ -146,64 +155,44 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
 int TSearchStrategy::CalcMoveOrder(
     const lczero::Position& position,
     const lczero::Move& move,
-    size_t ply
+    const lczero::Move& prevMove
 ) const {
-    UNUSED(ply);
-    const int stageDiff = 10000;
+    int score = 0;
 
     // Hash move
-    int stage = -1;
     std::optional<TMoveInfo> bm = TranspositionTable.Find(position);
     if (bm && bm->Move == move) {
-        return stage * stageDiff;
+        score += 10000;
+        return -score;
     }
 
     // Promotions
-    stage = 0;
-    const auto promotion = move.promotion();
-    if (promotion != lczero::Move::Promotion::None) {
-        if (promotion == lczero::Move::Promotion::Queen) {
-            return stage * stageDiff - GetPieceValue(EPieceType::Queen);
-        }
-        return stage * stageDiff;
+    if (IsPromotion(position, move)) {
+        score += 2000 + GetPieceValue(EPieceType::Queen);
     }
-
-    //stage = 1;
-    //lczero::Position newPosition(position, move);
-    //if (newPosition.GetBoard().IsUnderCheck()) {
-    //    return stage * stageDiff;
-    //}
 
     // Captures
     if (IsCapture(position, move)) {
         int captureValue = EvaluateCaptureSEE(position, move);
-        if (captureValue > 0) {
-            stage = 2;
-        } else if (captureValue == 0) {
-            stage = 3;
-        } else {
-            stage = 6;
-        }
-        return stage * stageDiff - captureValue;
+        score += 2000 + captureValue;
+        return -score;
     }
-
-    // Killer move
-    //stage = 3;
-    //if (KillerMoves[ply] == move) {
-    //    return stage * stageDiff;
-    //}
 
     // History heuristics
-    stage = 5;
     EPieceType fromPiece = GetPieceType(position.GetBoard(), move.from());
     int side = position.IsBlackToMove();
-    int historyScore = HistoryHeuristics.Get(side, fromPiece, move.to());
+    int historyScore = HistoryHeuristics.Get(side, fromPiece, move);
     if (historyScore != 0) {
-        return stage * stageDiff - historyScore;
+        score += 500 + historyScore;
     }
 
-    stage = 6;
-    return stage * stageDiff;
+    // Counter moves
+    auto counterMove = HistoryHeuristics.GetCounterMove(prevMove);
+    if (move == counterMove) {
+        score += 100;
+    }
+
+    return -score;
 }
 
 std::optional<TMoveInfo> TSearchStrategy::MakeMove(

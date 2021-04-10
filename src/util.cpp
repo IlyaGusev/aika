@@ -40,6 +40,14 @@ bool IsCapture(
     return false;
 }
 
+bool IsPromotion(
+    const lczero::Position& position,
+    const lczero::Move& move
+) {
+    const auto promotion = move.promotion();
+    return (promotion != lczero::Move::Promotion::None);
+}
+
 EPieceType GetPieceType(
     const lczero::ChessBoard& board,
     const lczero::BoardSquare& square

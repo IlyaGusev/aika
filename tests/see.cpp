@@ -63,8 +63,8 @@ BOOST_AUTO_TEST_CASE( see_white )
     lczero::ChessBoard board(fen);
     lczero::PositionHistory history;
     history.Reset(board, 0, 0);
-
     const auto& position = history.Last();
+
     BOOST_REQUIRE_EQUAL(
         EvaluateStaticExchange(position, lczero::BoardSquare("c5")),
         GetPieceValue(EPieceType::Queen) - GetPieceValue(EPieceType::Bishop)
@@ -76,6 +76,20 @@ BOOST_AUTO_TEST_CASE( see_white )
     BOOST_REQUIRE_EQUAL(
         EvaluateStaticExchange(position, lczero::BoardSquare("h7")),
         0
+    );
+}
+
+BOOST_AUTO_TEST_CASE( king_cant_take )
+{
+    const std::string fen = "r3r2k/1p1b3p/p3pb2/P1qPn1p1/1n4PQ/1PNBBR2/2P4P/R1N4K w - - 1 9";
+    lczero::ChessBoard board(fen);
+    lczero::PositionHistory history;
+    history.Reset(board, 0, 0);
+    const auto& position = history.Last();
+
+    BOOST_REQUIRE_EQUAL(
+        EvaluateStaticExchange(position, lczero::BoardSquare("h7")),
+        GetPieceValue(EPieceType::Pawn)
     );
 }
 

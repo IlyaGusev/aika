@@ -55,6 +55,11 @@ bool IsCapture(
     const lczero::Move& move
 );
 
+bool IsPromotion(
+    const lczero::Position& position,
+    const lczero::Move& move
+);
+
 EPieceType GetPieceType(
     const lczero::ChessBoard& board,
     const lczero::BoardSquare& square

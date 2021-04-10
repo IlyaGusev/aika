@@ -1,5 +1,5 @@
 {
-    "depth": 5,
+    "depth": 6,
     "enable_alpha_beta": true,
     "enable_tt": true,
     "qsearch_depth": 10000,

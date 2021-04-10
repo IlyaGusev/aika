@@ -35,11 +35,11 @@ class TSearchStrategy : public IStrategy {
 public:
     explicit TSearchStrategy(
         const std::string& configFile
-    ) : Config(configFile), KillerMoves(Config.Depth + 1) {}
+    ) : Config(configFile) {}
 
     explicit TSearchStrategy(
         const TSearchConfig& config
-    ) : Config(config), KillerMoves(Config.Depth + 1) {}
+    ) : Config(config) {}
 
     std::optional<TMoveInfo> MakeMove(
         const lczero::PositionHistory& history
@@ -65,12 +65,11 @@ private:
     int CalcMoveOrder(
         const lczero::Position& position,
         const lczero::Move& move,
-        size_t ply
+        const lczero::Move& prevMove
     ) const;
 
 private:
     TTranspositionTable TranspositionTable;
     THistoryHeuristics HistoryHeuristics;
     TSearchConfig Config;
-    std::vector<lczero::Move> KillerMoves;
 };
