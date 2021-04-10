@@ -32,4 +32,4 @@ cp build/chess_engine chess_engine
 ./chess_engine
 ```
 
-Link: http://127.0.0.1:8000/index.html
+Link (after running): http://127.0.0.1:8000/index.html
