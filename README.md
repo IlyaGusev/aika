@@ -1,4 +1,6 @@
-# Amateur level C++ chess engine with web GUI on top of lc0 board representation
+# Aika
+
+Amateur level C++ chess engine with web GUI on top of lc0 board representation
 
 Based on:
 * https://github.com/maksimKorzh/uci-gui/
