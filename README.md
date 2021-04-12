@@ -1,4 +1,6 @@
-# Chess engine GUI and tools
+# Aika
+
+Amateur level C++ chess engine with web GUI on top of lc0 board representation
 
 Based on:
 * https://github.com/maksimKorzh/uci-gui/
@@ -30,4 +32,5 @@ cp build/chess_engine chess_engine
 ./chess_engine
 ```
 
-Link: http://127.0.0.1:8000/index.html
+* Link (after running): http://127.0.0.1:8000/index.html
+* Demo: https://yallen.ru/aika/
