@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     po::options_description desc("options");
     desc.add_options()
         ("port", po::value<uint32_t>()->default_value(8000), "port")
-        ("host", po::value<std::string>()->default_value("0.0.0.0"), "host")
+        ("host", po::value<std::string>()->default_value("127.0.0.1"), "host")
         ("book", po::value<std::string>()->default_value(""), "book")
         ("search_config", po::value<std::string>()->default_value("search_config.json"), "search_config")
         ;

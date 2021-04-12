@@ -1,13 +1,25 @@
 <html>
   <head>
-    <title>Chess engine</title>
-    <link rel="shortcut icon" href="/static/favicon.ico">
+    <title>Aika chess engine</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta property="og:title" content="Aika chess engine" />
+    <meta property="og:description" content="Amateur level C++ chess engine with web GUI on top of lc0 board representation" />
+    <meta property="og:locale" content="en_XX" />
+
+    <!-- JQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/chess.js"></script>
+
+    <!-- Static files -->
+    <link rel="shortcut icon" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/css/chessboard-1.0.0.min.css">
+    <script src="/static/js/chess.js"></script>
     <script src="/static/js/chessboard-1.0.0.min.js"></script>
   </head>
   <body>
@@ -26,37 +38,6 @@
                       <div class="input-group-append">
                         <button id="set_fen" class="btn btn-outline-success">Set FEN</button>
                       </div>
-                    </div>
-                    <div class="input-group mb-3">
-                      <select id="move_time" class="form-control mr-2">
-                        <option value="0">N/A</option>
-                        <option value="instant" selected>Instant response</option>
-                        <option value="1">1 sec</option>
-                        <option value="2">2 sec</option>
-                        <option value="3">3 sec</option>
-                        <option value="4">4 sec</option>
-                        <option value="5">5 sec</option>
-                        <option value="6">6 sec</option>
-                        <option value="7">7 sec</option>
-                        <option value="8">8 sec</option>
-                        <option value="9">9 sec</option>
-                        <option value="10">10 sec</option>
-                      </select>
-                      <select id="fixed_depth" class="form-control ml-2">
-                        <option value="0">N/A</option>
-                        <option value="1">1 ply</option>
-                        <option value="2">2 ply</option>
-                        <option value="3">3 ply</option>
-                        <option value="4">4 ply</option>
-                        <option value="5">5 ply</option>
-                        <option value="6">6 ply</option>
-                        <option value="7">7 ply</option>
-                        <option value="8">8 ply</option>
-                        <option value="9">9 ply</option>
-                        <option value="10">10 ply</option>
-                        <option value="11">11 ply</option>
-                        <option value="12">12 ply</option>
-                      </select>
                     </div>
                     <!-- -buttons -->
                     <div class="btn-group">
@@ -107,7 +88,19 @@
           </div>
         </div>
       </div>
-    </div>
+      <div class="row">
+        <div class="col">
+          <div class="card mt-2">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-12 text-center">
+                 Source code: <a target="_blank" class="text-dark" href="https://github.com/IlyaGusev/aika">Aika</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
   </body>
 </html>
 
@@ -213,19 +206,19 @@
     if (user_color == 'White')
     {
       // init PGN header
-      pgn_header = '[White "' + user_name + '"]\n[Black "BBC 1.2"]\n\n';
+      pgn_header = '[White "' + user_name + '"]\n[Black "Aika 0.1"]\n\n';
       
       // init PGN filename
-      $('#download_link').attr('download', user_name + '_vs_BBC_' + date.toString().replace(/\s/g, "_") + '.pgn');
+      $('#download_link').attr('download', user_name + '_vs_Aika_' + date.toString().replace(/\s/g, "_") + '.pgn');
     }
     // if user color is black
     else if (user_color == 'Black')
     {
       // init PGN header
-      pgn_header = '[White "BBC 1.2"]\n[Black "' + user_name + '"]\n\n';
+      pgn_header = '[White "Aika 0.1"]\n[Black "' + user_name + '"]\n\n';
       
       // init PGN filename
-      $('#download_link').attr('download', 'BBC_vs_' + user_name + '_' + date.toString().replace(/\s/g, "_") + '.pgn');
+      $('#download_link').attr('download', 'Aika_vs_' + user_name + '_' + date.toString().replace(/\s/g, "_") + '.pgn');
     }
     // otherwise it's error
     else
