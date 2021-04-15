@@ -20,7 +20,7 @@ brew install boost jsoncpp ossp-uuid
 
 Build commands:
 ```
-git clone https://github.com/IlyaGusev/ChessEngineTemplate/
+git clone https://github.com/IlyaGusev/aika/
 cd ChessEngineTemplate
 git submodule update --init --recursive
 mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4 && cd ..
@@ -28,8 +28,7 @@ mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4 && cd
 
 # Run
 ```
-cp build/chess_engine chess_engine
-./chess_engine
+./aika --root ../gui --search_config ../search_config.json
 ```
 
 * Link (after running): http://127.0.0.1:8000/index.html

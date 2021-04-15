@@ -5,11 +5,11 @@
 
 TBookStrategy::TBookStrategy(const std::string& bookPath) {
     if (!bookPath.empty()) {
-        LOG_DEBUG("Reading opening database...");
+        PRINT_DEBUG("Reading opening database...");
         lczero::PgnReader reader;
         reader.AddPgnFile(bookPath);
         Openings = reader.GetGames();
-        LOG_DEBUG(Openings.size() << " openings loaded");
+        PRINT_DEBUG(Openings.size() << " openings loaded");
     }
 }
 
@@ -54,8 +54,8 @@ std::optional<TMoveInfo> TBookStrategy::MakeMove(
         if (isLegal) {
             return TMoveInfo(lastMove);
         } else {
-            LOG_ERROR("Illegal book move " << lastMove.as_string());
-            LOG_ERROR(currentBoard.DebugString());
+            PRINT_ERROR("Illegal book move " << lastMove.as_string());
+            PRINT_ERROR(currentBoard.DebugString());
         }
     }
     return std::nullopt;

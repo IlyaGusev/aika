@@ -64,17 +64,12 @@ TMoveInfo TSearchStrategy::Search(
                 TranspositionTable.Insert(position, ourMoveInfo, depth,
                     TTranspositionTable::ENodeType::Cut);
             }
-            if (!IsCapture(position, ourMove) && !IsPromotion(position, ourMove)) {
+            if (!IsCapture(position, ourMove) && !IsPromotion(ourMove)) {
                 int side = position.IsBlackToMove();
                 EPieceType fromPiece = GetPieceType(board, ourMove.from());
                 HistoryHeuristics.Add(side, fromPiece, ourMove, depth);
                 HistoryHeuristics.AddCounterMove(node.Move, ourMove);
             }
-            //if (movesCount > 10) {
-            //    std::cerr << position.DebugString();
-            //    std::cerr << ourMove.as_string() << std::endl;
-            //    std::cerr << movesCount << std::endl;
-            //}
             return ourMoveInfo;
         }
         movesCount += 1;
@@ -167,7 +162,7 @@ int TSearchStrategy::CalcMoveOrder(
     }
 
     // Promotions
-    if (IsPromotion(position, move)) {
+    if (IsPromotion(move)) {
         score += 2000 + GetPieceValue(EPieceType::Queen);
     }
 

@@ -8,12 +8,12 @@
 #define UNUSED(x) (void)(x)
 
 #ifdef NDEBUG
-#define LOG_DEBUG(x)
+#define PRINT_DEBUG(x)
 #else
-#define LOG_DEBUG(x) std::cerr << x << std::endl;
+#define PRINT_DEBUG(x) std::cerr << x << std::endl;
 #endif
 
-#define LOG_ERROR(x) std::cerr << x << std::endl;
+#define PRINT_ERROR(x) std::cerr << x << std::endl;
 
 #define LIKELY(x) __builtin_expect(!!(x), 1)
 #define UNLIKELY(x) __builtin_expect(!!(x), 0)
@@ -56,7 +56,6 @@ bool IsCapture(
 );
 
 bool IsPromotion(
-    const lczero::Position& position,
     const lczero::Move& move
 );
 

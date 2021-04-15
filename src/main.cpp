@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
         ("host", po::value<std::string>()->default_value("127.0.0.1"), "host")
         ("book", po::value<std::string>()->default_value(""), "book")
         ("search_config", po::value<std::string>()->default_value("search_config.json"), "search_config")
+        ("root", po::value<std::string>()->default_value("./gui"), "root path")
         ;
     po::positional_options_description p;
     po::command_line_parser parser{argc, argv};
@@ -33,10 +34,12 @@ int main(int argc, char** argv) {
 
     std::string host = vm["host"].as<std::string>();
     std::string book = vm["book"].as<std::string>();
+    std::string root = vm["root"].as<std::string>();
     std::string search_config = vm["search_config"].as<std::string>();
     uint32_t port = vm["port"].as<uint32_t>();
 
     drogon::app()
+        .setLogPath("./")
         .setLogLevel(trantor::Logger::kInfo)
         .addListener(host, port)
         .setThreadNum(6)
@@ -45,7 +48,7 @@ int main(int argc, char** argv) {
         .setIdleConnectionTimeout(60)
         .setKeepaliveRequestsNumber(0)
         .setPipeliningRequestsNumber(0)
-        .setDocumentRoot("./gui");
+        .setDocumentRoot(root);
 
     TStrategies strategies;
     strategies.emplace_back(new TBookStrategy(book));

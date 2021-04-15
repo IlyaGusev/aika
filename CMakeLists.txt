@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-project(chess_engine)
+project(aika)
 
 include(CTest)
 
@@ -56,8 +56,12 @@ set(LIB_LIST
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/lc0/src")
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} src/main.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB_LIST})
+
+add_library(${PROJECT_NAME}_lib STATIC ${SOURCE_FILES})
+target_link_libraries(${PROJECT_NAME}_lib PRIVATE ${LIB_LIST})
+
+add_executable(${PROJECT_NAME} src/main.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB_LIST} ${PROJECT_NAME}_lib)
 
 enable_testing()
 
@@ -65,8 +69,8 @@ file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} tests/*.cpp)
 add_definitions(-DTEST_PATH=${CMAKE_CURRENT_SOURCE_DIR}/tests)
 foreach(testSrc ${TEST_SRCS})
     get_filename_component(testName ${testSrc} NAME_WE)
-    add_executable(${testName} ${SOURCE_FILES} ${testSrc})
+    add_executable(${testName} ${testSrc})
     target_compile_definitions(${testName} PRIVATE "BOOST_TEST_DYN_LINK=1")
-    target_link_libraries(${testName} PRIVATE ${LIB_LIST})
+    target_link_libraries(${testName} PRIVATE ${LIB_LIST} ${PROJECT_NAME}_lib)
     add_test(NAME ${testName} COMMAND ${testName})
 endforeach(testSrc)

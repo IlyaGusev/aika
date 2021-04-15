@@ -23,21 +23,22 @@ void TController::MakeMove(
     Json::Value response;
 
     std::string pgn = req->getParameter("pgn");
-    LOG_DEBUG("PGN: " << pgn);
+    PRINT_DEBUG("PGN: " << pgn);
+    LOG_INFO << "PGN: " << pgn;
 
     const auto& history = ReadPGN(pgn);
-    LOG_DEBUG("Chess board: ");
-    LOG_DEBUG(history.Last().GetBoard().DebugString());
-    LOG_DEBUG("Current material score: " << CalcMaterialScore(history.Last()));
-    LOG_DEBUG("Current PST score: " << CalcPSTScore(history.Last()));
+    PRINT_DEBUG("Chess board: ");
+    PRINT_DEBUG(history.Last().GetBoard().DebugString());
+    PRINT_DEBUG("Current material score: " << CalcMaterialScore(history.Last()));
+    PRINT_DEBUG("Current PST score: " << CalcPSTScore(history.Last()));
 
     lczero::GameResult result = history.ComputeGameResult();
     if (result == lczero::GameResult::BLACK_WON) {
-        LOG_DEBUG("Black won");
+        PRINT_DEBUG("Black won");
     } else if (result == lczero::GameResult::WHITE_WON) {
-        LOG_DEBUG("White won");
+        PRINT_DEBUG("White won");
     } else if (result == lczero::GameResult::DRAW) {
-        LOG_DEBUG("Draw");
+        PRINT_DEBUG("Draw");
     }
     if (result != lczero::GameResult::UNDECIDED) {
         response["best_move"] = "#";
@@ -51,7 +52,7 @@ void TController::MakeMove(
         bestMove = strategy->MakeMove(history);
         if (bestMove) {
             strategyName = strategy->GetName();
-            LOG_DEBUG("Strategy: " << strategy->GetName());
+            PRINT_DEBUG("Strategy: " << strategy->GetName());
             break;
         }
     }
@@ -65,7 +66,8 @@ void TController::MakeMove(
     }
 
     std::string moveString = bestMove->Move.as_string();
-    LOG_DEBUG("Best move: " << moveString << std::endl);
+    PRINT_DEBUG("Best move: " << moveString << std::endl);
+    LOG_INFO << "Move: " << moveString;
 
     response["score"] = bestMove->Score;
     response["best_move"] = moveString;

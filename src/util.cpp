@@ -41,7 +41,6 @@ bool IsCapture(
 }
 
 bool IsPromotion(
-    const lczero::Position& position,
     const lczero::Move& move
 ) {
     const auto promotion = move.promotion();
