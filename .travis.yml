@@ -1,5 +1,5 @@
 os: linux
-dist: bionic
+dist: focal
 language: cpp
 
 branches:
@@ -34,7 +34,8 @@ script:
   - make -j4
   - make test
   - mkdir output
-  - chmod +x search && perf record -F 99 -g ./search > output/test.log
+  - chmod +x search
+  - perf record -F 99 -g ./search > output/search.log
   - perf script > out.perf
   - ./FlameGraph/stackcollapse-perf.pl out.perf | ./FlameGraph/flamegraph.pl > output/flamegraph.svg
 
