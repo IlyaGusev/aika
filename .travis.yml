@@ -1,0 +1,50 @@
+os: linux
+dist: bionic
+language: cpp
+
+branches:
+  only:
+  - main
+
+addons:
+  apt:
+    update: true
+    packages:
+      - cmake
+      - build-essential
+      - libboost-all-dev
+      - linux-tools-gcp
+      - libjsoncpp-dev
+      - uuid-dev
+
+compiler:
+  - clang
+  - gcc
+
+env:
+  - BUILD_TYPE=Debug
+
+before_script:
+  - git clone https://github.com/brendangregg/FlameGraph
+
+script:
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
+  - make -j4
+  - make test
+  - mkdir output
+  - chmod +x search && perf record -F 99 -g ./search > output/test.log
+  - perf script > out.perf
+  - ./FlameGraph/stackcollapse-perf.pl out.perf | ./FlameGraph/flamegraph.pl > output/flamegraph.svg
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GH_GITHUB_TOKEN
+  keep_history: false
+  local_dir: output
+  verbose: true
+  on:
+    branch: main
+    condition: $TRAVIS_COMPILER = clang
