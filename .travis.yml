@@ -33,9 +33,10 @@ script:
   - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
   - make -j4
   - make test
+  - cd ..
   - mkdir output
-  - chmod +x search
-  - perf record -F 99 -g ./search > output/search.log
+  - chmod +x build/search
+  - perf record -F 99 -g ./build/search > output/search.log
   - perf script > out.perf
   - ./FlameGraph/stackcollapse-perf.pl out.perf | ./FlameGraph/flamegraph.pl > output/flamegraph.svg
 
