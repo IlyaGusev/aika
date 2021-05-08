@@ -23,7 +23,6 @@ compiler:
 
 env:
   - BUILD_TYPE=Debug
-  - BOOST_TEST_LOG_LEVEL=all
 
 before_script:
   - git clone https://github.com/brendangregg/FlameGraph
@@ -37,7 +36,7 @@ script:
   - cd ..
   - mkdir output
   - chmod +x build/search
-  - perf record -F 99 -g ./build/search > output/search.log
+  - perf record -F 99 -g BOOST_TEST_LOG_LEVEL=all ./build/search > output/search.log
   - perf script > out.perf
   - ./FlameGraph/stackcollapse-perf.pl out.perf | ./FlameGraph/flamegraph.pl > output/flamegraph.svg
 
