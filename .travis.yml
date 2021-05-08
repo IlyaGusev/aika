@@ -23,6 +23,7 @@ compiler:
 
 env:
   - BUILD_TYPE=Debug
+  - BOOST_TEST_LOG_LEVEL=all
 
 before_script:
   - git clone https://github.com/brendangregg/FlameGraph
