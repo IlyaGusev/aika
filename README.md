@@ -1,6 +1,6 @@
 # Aika
 
-[![Build Status](https://travis-ci.com/IlyaGusev/aika.svg?branch=main)](https://travis-ci.com/IlyaGusev/aika)
+[![Build Status](https://travis-ci.com/IlyaGusev/aika.svg?branch=main)](https://travis-ci.com/github/IlyaGusev/aika)
 
 Amateur level C++ chess engine with web GUI on top of lc0 board representation
 
