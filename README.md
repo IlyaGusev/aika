@@ -30,6 +30,7 @@ mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4 &&
 
 # Run
 ```
+cd build
 ./aika --root ../gui --search_config ../search_config.json
 ```
 
