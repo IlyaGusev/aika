@@ -13,7 +13,7 @@ addons:
       - cmake
       - build-essential
       - libboost-all-dev
-      - linux-tools-gcp
+      - linux-tools-5.13.0-1027-gcp
       - libjsoncpp-dev
       - uuid-dev
 

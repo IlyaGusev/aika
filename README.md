@@ -1,6 +1,6 @@
 # Aika
 
-[![Build Status](https://travis-ci.com/IlyaGusev/aika.svg?branch=main)](https://travis-ci.com/IlyaGusev/aika)
+[![Build Status](https://travis-ci.com/IlyaGusev/aika.svg?branch=main)](https://travis-ci.com/github/IlyaGusev/aika)
 
 Amateur level C++ chess engine with web GUI on top of lc0 board representation
 
@@ -23,13 +23,14 @@ brew install boost jsoncpp ossp-uuid
 Build commands:
 ```
 git clone https://github.com/IlyaGusev/aika/
-cd ChessEngineTemplate
+cd aika
 git submodule update --init --recursive
-mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4 && cd ..
+mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4 && cd ..
 ```
 
 # Run
 ```
+cd build
 ./aika --root ../gui --search_config ../search_config.json
 ```
 
