@@ -4,6 +4,7 @@
 #include <util.h>
 
 #include <unordered_map>
+#include <boost/unordered_map.hpp>
 
 class TTranspositionTable {
 public:
@@ -39,7 +40,7 @@ public:
     };
 
 private:
-    std::unordered_map<lczero::Position, TNode, TPositionHasher, TPositionEqualFn> Data;
+    boost::unordered_map<lczero::Position, TNode, TPositionHasher, TPositionEqualFn> Data;
 
 public:
     TTranspositionTable() {}

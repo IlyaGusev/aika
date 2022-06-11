@@ -17,9 +17,22 @@ TMoveInfo TSearchStrategy::Search(
     const size_t depth = node.Depth;
     const size_t ply = node.Ply;
 
-    const auto moveInfo = TranspositionTable.Find(position, depth);
-    if (moveInfo) {
-        return *moveInfo;
+    const auto pvMoveInfo = TranspositionTable.Find(
+        position,
+        depth,
+        TTranspositionTable::ENodeType::PV
+    );
+    if (pvMoveInfo) {
+        return *pvMoveInfo;
+    }
+
+    const auto cutMoveInfo = TranspositionTable.Find(
+        position,
+        depth,
+        TTranspositionTable::ENodeType::Cut
+    );
+    if (cutMoveInfo && cutMoveInfo->Score >= beta) {
+        return *cutMoveInfo;
     }
 
     const auto& ourLegalMoves = board.GenerateLegalMoves();
@@ -49,7 +62,6 @@ TMoveInfo TSearchStrategy::Search(
     }
 
     TMoveInfo bestMoveInfo(MIN_SCORE_VALUE - 1);
-    size_t movesCount = 0;
     for (auto& [_, child] : children) {
         UNUSED(_);
         const auto& bestEnemyMove = Search(child, -beta, -alpha);
@@ -72,7 +84,6 @@ TMoveInfo TSearchStrategy::Search(
             }
             return ourMoveInfo;
         }
-        movesCount += 1;
         if (ourMoveInfo > bestMoveInfo) {
             bestMoveInfo = ourMoveInfo;
             alpha = std::max(alpha, ourScore);
