@@ -55,7 +55,6 @@ public:
     );
     std::optional<TNode> Find(
         const lczero::Position& position,
-        size_t depth = 0,
-        ENodeType type = ENodeType::PV
+        size_t depth = 0
     ) const;
 };

@@ -14,11 +14,10 @@ void TTranspositionTable::Insert(
 
 std::optional<TTranspositionTable::TNode> TTranspositionTable::Find(
     const lczero::Position& position,
-    size_t depth,
-    ENodeType type
+    size_t depth
 ) const {
     auto it = Data.find(position);
-    if (it != Data.end() && it->second.Depth >= depth && it->second.Type == type) {
+    if (it != Data.end() && it->second.Depth >= depth) {
         return it->second;
     }
     return std::nullopt;

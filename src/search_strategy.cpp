@@ -17,22 +17,18 @@ TMoveInfo TSearchStrategy::Search(
     const size_t depth = node.Depth;
     const size_t ply = node.Ply;
 
-    const auto pvNode = TranspositionTable.Find(
+    const auto ttNode = TranspositionTable.Find(
         position,
-        depth,
-        TTranspositionTable::ENodeType::PV
+        depth
     );
-    if (pvNode) {
-        return pvNode->Move;
-    }
-
-    const auto cutNode = TranspositionTable.Find(
-        position,
-        depth,
-        TTranspositionTable::ENodeType::Cut
-    );
-    if (cutNode && cutNode->Move.Score >= beta) {
-        return cutNode->Move;
+    if (ttNode) {
+        const auto& nodeType = ttNode->Type;
+        const auto& nodeMove = ttNode->Move;
+        if (nodeType == TTranspositionTable::ENodeType::PV) {
+            return nodeMove;
+        } else if (nodeType == TTranspositionTable::ENodeType::Cut && nodeMove.Score >= beta) {
+            return nodeMove;
+        }
     }
 
     const auto& ourLegalMoves = board.GenerateLegalMoves();
