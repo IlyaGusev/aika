@@ -51,11 +51,20 @@ public:
     void Insert(
         const lczero::Position& position,
         const TMoveInfo& move,
-        size_t depth,
+        int depth,
         ENodeType type
     );
+
+    void Insert(
+        const lczero::Position& position,
+        const TMoveInfo& move,
+        int depth,
+        int alpha,
+        int beta
+    );
+
     std::optional<TNode> Find(
         const lczero::Position& position,
-        size_t depth = 0
+        int depth = 0
     ) const;
 };

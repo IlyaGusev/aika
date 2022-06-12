@@ -18,6 +18,7 @@ TMoveInfo TSearchStrategy::Search(
     const auto& board = position.GetBoard();
     const int depth = node.Depth;
     const size_t ply = node.Ply;
+    ENSURE(depth >= 0, "Incorrect depth for Search");
 
     // TT lookup
     if (const auto ttNode = TranspositionTable.Find(position, depth)) {
@@ -25,8 +26,7 @@ TMoveInfo TSearchStrategy::Search(
         const auto& nodeMove = ttNode->Move;
         if (nodeType == TTranspositionTable::ENodeType::PV) {
             return nodeMove;
-        }
-        if (nodeType == TTranspositionTable::ENodeType::Cut) {
+        } else if (nodeType == TTranspositionTable::ENodeType::Cut) {
             alpha = std::max(alpha, nodeMove.Score);
         } else if (nodeType == TTranspositionTable::ENodeType::All) {
             beta = std::min(beta, nodeMove.Score);
@@ -92,13 +92,7 @@ TMoveInfo TSearchStrategy::Search(
 
     // TT fill
     if (Config.EnableTT) {
-        TTranspositionTable::ENodeType nodeType = TTranspositionTable::ENodeType::PV;
-        if (bestMoveInfo.Score <= alphaOrig) {
-            nodeType = TTranspositionTable::ENodeType::All;
-        } else if (bestMoveInfo.Score >= beta) {
-            nodeType = TTranspositionTable::ENodeType::Cut;
-        }
-        TranspositionTable.Insert(position, bestMoveInfo, depth, nodeType);
+        TranspositionTable.Insert(position, bestMoveInfo, depth, alphaOrig, beta);
     }
     return bestMoveInfo;
 }
@@ -108,13 +102,17 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
     int alpha,
     int beta
 ) {
+    // Saving variables
+    const int alphaOrig = alpha;
     const auto& position = node.Position;
     const auto& board = position.GetBoard();
+    const int depth = node.Depth;
+    const size_t ply = node.Ply;
+    ENSURE(depth <= 0, "Incorrect depth for QSearch");
+
     const auto& ourLegalMoves = board.GenerateLegalMoves();
     const auto& theirBoard = position.GetThemBoard();
     const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
-    const int depth = node.Depth;
-    const size_t ply = node.Ply;
 
     const int staticScore = Evaluate(
         position, ourLegalMoves,
@@ -124,10 +122,24 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
     if (IsTerminal(position, ourLegalMoves, theirLegalMoves) || (-depth == Config.QuiescenceSearchDepth)) {
         return {staticScore};
     }
-    if (Config.EnableAlphaBeta && staticScore >= beta) {
+    alpha = std::max(alpha, staticScore);
+
+    // TT lookup
+    if (const auto ttNode = TranspositionTable.Find(position, depth)) {
+        const auto& nodeType = ttNode->Type;
+        const auto& nodeMove = ttNode->Move;
+        if (nodeType == TTranspositionTable::ENodeType::PV) {
+            return nodeMove;
+        } else if (nodeType == TTranspositionTable::ENodeType::Cut) {
+            alpha = std::max(alpha, nodeMove.Score);
+        } else if (nodeType == TTranspositionTable::ENodeType::All) {
+            beta = std::min(beta, nodeMove.Score);
+        }
+    }
+
+    if (Config.EnableAlphaBeta && alpha >= beta) {
         return {beta};
     }
-    alpha = std::max(alpha, staticScore);
 
     std::multimap<int, TSearchNode> children;
     for (const auto& move : ourLegalMoves) {
@@ -156,12 +168,18 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
         TMoveInfo ourMoveInfo(ourMove, ourScore);
 
         if (Config.EnableAlphaBeta && ourScore >= beta) {
-            return {ourMove, beta};
+            bestMoveInfo = {ourMove, beta};
+            break;
         }
         if (ourMoveInfo > bestMoveInfo) {
             bestMoveInfo = ourMoveInfo;
             alpha = std::max(alpha, ourScore);
         }
+    }
+
+    // TT fill
+    if (Config.EnableTT) {
+        TranspositionTable.Insert(position, bestMoveInfo, depth, alphaOrig, beta);
     }
     return bestMoveInfo;
 }

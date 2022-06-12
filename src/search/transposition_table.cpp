@@ -3,7 +3,7 @@
 void TTranspositionTable::Insert(
     const lczero::Position& position,
     const TMoveInfo& move,
-    size_t depth,
+    int depth,
     ENodeType type
 ) {
     auto it = Data.find(position);
@@ -12,12 +12,29 @@ void TTranspositionTable::Insert(
     }
 }
 
+void TTranspositionTable::Insert(
+    const lczero::Position& position,
+    const TMoveInfo& move,
+    int depth,
+    int alpha,
+    int beta
+) {
+    const int score = move.Score;
+    ENodeType nodeType = ENodeType::PV;
+    if (score <= alpha) {
+        nodeType = ENodeType::All;
+    } else if (score >= beta) {
+        nodeType = ENodeType::Cut;
+    }
+    Insert(position, move, depth, nodeType);
+}
+
 std::optional<TTranspositionTable::TNode> TTranspositionTable::Find(
     const lczero::Position& position,
-    size_t depth
+    int depth
 ) const {
     auto it = Data.find(position);
-    if (it != Data.end() && it->second.Depth >= depth) {
+    if (it != Data.end() && depth <= it->second.Depth) {
         return it->second;
     }
     return std::nullopt;
