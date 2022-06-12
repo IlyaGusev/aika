@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE( bratko_kopec )
     size_t passedCount = 0;
     for (const auto& record : records) {
         BOOST_TEST_MESSAGE("Running " << record.ID);
-        auto prediction = GetFenBestMove(record.FEN, 5, true).Move;
+        auto prediction = GetFenBestMove(record.FEN, 6, true).Move;
         if (prediction == record.BestMoves[0]) {
             passedCount += 1;
         }

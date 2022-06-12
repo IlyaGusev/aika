@@ -1,11 +1,11 @@
 #include <search_strategy.h>
-
 #include <evaluation.h>
 #include <search/see.h>
 
 #include <algorithm>
 #include <chrono>
 #include <map>
+
 
 TMoveInfo TSearchStrategy::Search(
     const TSearchNode& node,
@@ -18,18 +18,18 @@ TMoveInfo TSearchStrategy::Search(
     const size_t depth = node.Depth;
     const size_t ply = node.Ply;
 
-    const auto ttNode = TranspositionTable.Find(
-        position,
-        depth
-    );
-    if (ttNode) {
+    if (const auto ttNode = TranspositionTable.Find(position, depth)) {
         const auto& nodeType = ttNode->Type;
         const auto& nodeMove = ttNode->Move;
         if (nodeType == TTranspositionTable::ENodeType::PV) {
             return nodeMove;
-        } else if (nodeType == TTranspositionTable::ENodeType::Cut && nodeMove.Score >= beta) {
-            return nodeMove;
-        } else if (nodeType == TTranspositionTable::ENodeType::All && nodeMove.Score <= alpha) {
+        }
+        if (nodeType == TTranspositionTable::ENodeType::Cut) {
+            alpha = std::max(alpha, nodeMove.Score);
+        } else if (nodeType == TTranspositionTable::ENodeType::All) {
+            beta = std::min(beta, nodeMove.Score);
+        }
+        if (alpha >= beta) {
             return nodeMove;
         }
     }
@@ -72,17 +72,14 @@ TMoveInfo TSearchStrategy::Search(
         const int ourScore = -bestEnemyScore;
         TMoveInfo ourMoveInfo(ourMove, ourScore);
         if (Config.EnableAlphaBeta && ourScore >= beta) {
-            if (Config.EnableTT) {
-                TranspositionTable.Insert(position, ourMoveInfo, depth,
-                    TTranspositionTable::ENodeType::Cut);
-            }
             if (!IsCapture(position, ourMove) && !IsPromotion(ourMove)) {
-                int side = position.IsBlackToMove();
+                const int side = position.IsBlackToMove();
                 EPieceType fromPiece = GetPieceType(board, ourMove.from());
                 HistoryHeuristics.Add(side, fromPiece, ourMove, depth);
                 HistoryHeuristics.AddCounterMove(node.Move, ourMove);
             }
-            return ourMoveInfo;
+            bestMoveInfo = ourMoveInfo;
+            break;
         }
         if (ourMoveInfo > bestMoveInfo) {
             bestMoveInfo = ourMoveInfo;
@@ -90,15 +87,13 @@ TMoveInfo TSearchStrategy::Search(
         }
     }
     if (Config.EnableTT) {
+        TTranspositionTable::ENodeType nodeType = TTranspositionTable::ENodeType::PV;
         if (bestMoveInfo.Score <= alphaOrig) {
-            TranspositionTable.Insert(position, bestMoveInfo, depth,
-                TTranspositionTable::ENodeType::All
-            );
-        } else {
-            TranspositionTable.Insert(position, bestMoveInfo, depth,
-                TTranspositionTable::ENodeType::PV
-            );
+            nodeType = TTranspositionTable::ENodeType::All;
+        } else if (bestMoveInfo.Score >= beta) {
+            nodeType = TTranspositionTable::ENodeType::Cut;
         }
+        TranspositionTable.Insert(position, bestMoveInfo, depth, nodeType);
     }
     return bestMoveInfo;
 }
