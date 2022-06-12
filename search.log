@@ -1,0 +1,125 @@
+Running 4 test cases...
+[1;34;49mEntering test module "search"
+[0;39;49m[1;34;49m/home/travis/build/IlyaGusev/aika/tests/search.cpp(100): Entering test case "time_benchmark"
+[0;39;49m/home/travis/build/IlyaGusev/aika/tests/search.cpp(107): [1;33;49mwarning: in "time_benchmark": 111049 ms[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(108): [1;33;49mwarning: in "time_benchmark": condition bestMove.Move.as_string() == move is not satisfied [f3f1 != f4f5][0;39;49m
+[1;36;49mTest case time_benchmark did not check any assertions[0;39;49m
+[1;34;49m/home/travis/build/IlyaGusev/aika/tests/search.cpp(100): Leaving test case "time_benchmark"; testing time: 111163992us
+[0;39;49m[1;34;49m/home/travis/build/IlyaGusev/aika/tests/search.cpp(111): Entering test case "alpha_beta"
+[0;39;49m/home/travis/build/IlyaGusev/aika/tests/search.cpp(130): [1;32;49minfo: check bestMove1 != std::nullopt has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(131): [1;32;49minfo: check bestMove2 != std::nullopt has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(132): [1;32;49minfo: check bestMove1->Move.as_string() == bestMove2->Move.as_string() has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(133): [1;32;49minfo: check bestMove1->Score == bestMove2->Score has passed[0;39;49m
+[1;34;49m/home/travis/build/IlyaGusev/aika/tests/search.cpp(111): Leaving test case "alpha_beta"; testing time: 100071us
+[0;39;49m[1;34;49m/home/travis/build/IlyaGusev/aika/tests/search.cpp(136): Entering test case "custom_epd"
+[0;39;49m[1;36;49mCustom suite: 16 records[0;39;49m
+[1;36;49mRunning Custom 1 - Take back[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 1 - Take back: r3k2r/ppp2ppp/3pBn2/1P2n3/4P3/B1P5/P2N1PPP/R4RK1 b kq - 0 15 true: f2e3; pred: f2e3; score: -41; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 1 - Take back: r3k2r/ppp2ppp/3pBn2/1P2n3/4P3/B1P5/P2N1PPP/R4RK1 b kq - 0 15 true: f2e3; pred: f2e3; score: -55; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 1 - Take back: r3k2r/ppp2ppp/3pBn2/1P2n3/4P3/B1P5/P2N1PPP/R4RK1 b kq - 0 15 true: f2e3; pred: f2e3; score: -37; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 1 - Take back: r3k2r/ppp2ppp/3pBn2/1P2n3/4P3/B1P5/P2N1PPP/R4RK1 b kq - 0 15 true: f2e3; pred: f2e3; score: -54; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 2 - Take back 2[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 2 - Take back 2: r1b1k2r/bpp2pp1/p1n5/P3Bn2/1PB4p/2P4P/3N1PP1/RN3RK1 b kq - 0 25 true: c3e4; pred: c3e4; score: 305; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 2 - Take back 2: r1b1k2r/bpp2pp1/p1n5/P3Bn2/1PB4p/2P4P/3N1PP1/RN3RK1 b kq - 0 25 true: c3e4; pred: c3e4; score: 284; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 2 - Take back 2: r1b1k2r/bpp2pp1/p1n5/P3Bn2/1PB4p/2P4P/3N1PP1/RN3RK1 b kq - 0 25 true: c3e4; pred: c3e4; score: 208; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 2 - Take back 2: r1b1k2r/bpp2pp1/p1n5/P3Bn2/1PB4p/2P4P/3N1PP1/RN3RK1 b kq - 0 25 true: c3e4; pred: c3e4; score: 208; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 3 - Search depth 1 white[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 3 - Search depth 1 white: kn6/nn3r2/8/8/2p2Q2/8/NN6/KN6 w - - true: f4f7; pred: f4f7; score: 871; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 3 - Search depth 1 white: kn6/nn3r2/8/8/2p2Q2/8/NN6/KN6 w - - true: f4f7; pred: f4f7; score: 970; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 3 - Search depth 1 white: kn6/nn3r2/8/8/2p2Q2/8/NN6/KN6 w - - true: f4f7; pred: f4f7; score: 975; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 3 - Search depth 1 white: kn6/nn3r2/8/8/2p2Q2/8/NN6/KN6 w - - true: f4f7; pred: f4f7; score: 963; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 4 - Search depth 1 black[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 4 - Search depth 1 black: k4K2/8/8/3q4/8/1R3N1P/8/8 b - - true: d4b6; pred: d4b6; score: 562; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 4 - Search depth 1 black: k4K2/8/8/3q4/8/1R3N1P/8/8 b - - true: d4b6; pred: d4b6; score: 612; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 4 - Search depth 1 black: k4K2/8/8/3q4/8/1R3N1P/8/8 b - - true: d4b6; pred: d4b6; score: 612; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 4 - Search depth 1 black: k4K2/8/8/3q4/8/1R3N1P/8/8 b - - true: d4b6; pred: d4b6; score: 623; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 5 - Search depth 2 white[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 5 - Search depth 2 white: kn6/nn2rr2/8/4Q3/8/2p1p2b/1Q6/KN6 w - - true: e5c3; pred: e5c3; score: -89; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 5 - Search depth 2 white: kn6/nn2rr2/8/4Q3/8/2p1p2b/1Q6/KN6 w - - true: e5c3; pred: e5c3; score: -148; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 5 - Search depth 2 white: kn6/nn2rr2/8/4Q3/8/2p1p2b/1Q6/KN6 w - - true: e5c3; pred: e5c3; score: -98; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 5 - Search depth 2 white: kn6/nn2rr2/8/4Q3/8/2p1p2b/1Q6/KN6 w - - true: e5c3; pred: e5c3; score: -386; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 6 - Quickest mate[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 6 - Quickest mate: 8/3R4/3p4/3P4/1K4Q1/8/7k/8 w - - 97 104 true: d7h7; pred: d7h7; score: 100000; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 6 - Quickest mate: 8/3R4/3p4/3P4/1K4Q1/8/7k/8 w - - 97 104 true: d7h7; pred: d7h7; score: 100000; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 6 - Quickest mate: 8/3R4/3p4/3P4/1K4Q1/8/7k/8 w - - 97 104 true: d7h7; pred: d7h7; score: 100000; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 6 - Quickest mate: 8/3R4/3p4/3P4/1K4Q1/8/7k/8 w - - 97 104 true: d7h7; pred: d7h7; score: 100000; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 7 - Mate in one for white[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 7 - Mate in one for white: rnbqkbnr/1pp2ppp/p2p4/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w true: h5f7; pred: h5f7; score: 100000; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 7 - Mate in one for white: rnbqkbnr/1pp2ppp/p2p4/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w true: h5f7; pred: h5f7; score: 100000; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 7 - Mate in one for white: rnbqkbnr/1pp2ppp/p2p4/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w true: h5f7; pred: h5f7; score: 100000; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 7 - Mate in one for white: rnbqkbnr/1pp2ppp/p2p4/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w true: h5f7; pred: h5f7; score: 100000; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 8 - Mate in one for black[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 8 - Mate in one for black: rnb1k1nr/pppp1ppp/8/2b1p3/4P2q/2PP3P/PP3PP1/RNBQKBNR b true: h5f7; pred: h5f7; score: 100000; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 8 - Mate in one for black: rnb1k1nr/pppp1ppp/8/2b1p3/4P2q/2PP3P/PP3PP1/RNBQKBNR b true: h5f7; pred: h5f7; score: 100000; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 8 - Mate in one for black: rnb1k1nr/pppp1ppp/8/2b1p3/4P2q/2PP3P/PP3PP1/RNBQKBNR b true: h5f7; pred: h5f7; score: 100000; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 8 - Mate in one for black: rnb1k1nr/pppp1ppp/8/2b1p3/4P2q/2PP3P/PP3PP1/RNBQKBNR b true: h5f7; pred: h5f7; score: 100000; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 9 - Mate in two 1[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 9 - Mate in two 1: 3qr2k/pbpp2pp/1p5N/3Q2b1/2P1P3/P7/1PP2PPP/R4RK1 w - - 0 1 true: d5g8; pred: d5g8; score: 100000; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 9 - Mate in two 1: 3qr2k/pbpp2pp/1p5N/3Q2b1/2P1P3/P7/1PP2PPP/R4RK1 w - - 0 1 true: d5g8; pred: d5g8; score: 100000; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 9 - Mate in two 1: 3qr2k/pbpp2pp/1p5N/3Q2b1/2P1P3/P7/1PP2PPP/R4RK1 w - - 0 1 true: d5g8; pred: d5g8; score: 100000; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 9 - Mate in two 1: 3qr2k/pbpp2pp/1p5N/3Q2b1/2P1P3/P7/1PP2PPP/R4RK1 w - - 0 1 true: d5g8; pred: d5g8; score: 100000; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 10 - Mate in two 2[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 10 - Mate in two 2: r1bq2k1/ppp2r1p/2np1pNQ/2bNpp2/2B1P3/3P4/PPP2PPP/R3K2R w KQ - 0 1 true: d5f6; pred: d5f6; score: 100000; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 10 - Mate in two 2: r1bq2k1/ppp2r1p/2np1pNQ/2bNpp2/2B1P3/3P4/PPP2PPP/R3K2R w KQ - 0 1 true: d5f6; pred: d5f6; score: 100000; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 10 - Mate in two 2: r1bq2k1/ppp2r1p/2np1pNQ/2bNpp2/2B1P3/3P4/PPP2PPP/R3K2R w KQ - 0 1 true: d5f6; pred: d5f6; score: 100000; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 10 - Mate in two 2: r1bq2k1/ppp2r1p/2np1pNQ/2bNpp2/2B1P3/3P4/PPP2PPP/R3K2R w KQ - 0 1 true: d5f6; pred: d5f6; score: 100000; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 11 - Mate in two 3[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 11 - Mate in two 3: r1bk3r/1pp2ppp/pb1p1n2/n2P4/B3P1q1/2Q2N2/PB3PPP/RN3RK1 w - - 0 1 true: c3f6; pred: c3f6; score: 100000; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 11 - Mate in two 3: r1bk3r/1pp2ppp/pb1p1n2/n2P4/B3P1q1/2Q2N2/PB3PPP/RN3RK1 w - - 0 1 true: c3f6; pred: c3f6; score: 100000; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 11 - Mate in two 3: r1bk3r/1pp2ppp/pb1p1n2/n2P4/B3P1q1/2Q2N2/PB3PPP/RN3RK1 w - - 0 1 true: c3f6; pred: c3f6; score: 100000; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 11 - Mate in two 3: r1bk3r/1pp2ppp/pb1p1n2/n2P4/B3P1q1/2Q2N2/PB3PPP/RN3RK1 w - - 0 1 true: c3f6; pred: c3f6; score: 100000; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 12 - Mate in two 4[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 12 - Mate in two 4: r2q1k1r/ppp1n1Np/1bnpB2B/8/1P1pb1P1/2P4P/P4P2/R2Q1RK1 w - - 0 1 true: g7h5; pred: g7h5; score: 100000; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 12 - Mate in two 4: r2q1k1r/ppp1n1Np/1bnpB2B/8/1P1pb1P1/2P4P/P4P2/R2Q1RK1 w - - 0 1 true: g7h5; pred: g7h5; score: 100000; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 12 - Mate in two 4: r2q1k1r/ppp1n1Np/1bnpB2B/8/1P1pb1P1/2P4P/P4P2/R2Q1RK1 w - - 0 1 true: g7h5; pred: g7h5; score: 100000; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 12 - Mate in two 4: r2q1k1r/ppp1n1Np/1bnpB2B/8/1P1pb1P1/2P4P/P4P2/R2Q1RK1 w - - 0 1 true: g7h5; pred: g7h5; score: 100000; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 13 - Mate in two 5[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 13 - Mate in two 5: r1b2rk1/ppp2p1p/1b1p1B2/5q1Q/2Bp4/2P5/PP3PPP/R3R1K1 w - - 0 1 true: h5f7; pred: h5f7; score: 100000; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 13 - Mate in two 5: r1b2rk1/ppp2p1p/1b1p1B2/5q1Q/2Bp4/2P5/PP3PPP/R3R1K1 w - - 0 1 true: h5f7; pred: h5f7; score: 100000; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 13 - Mate in two 5: r1b2rk1/ppp2p1p/1b1p1B2/5q1Q/2Bp4/2P5/PP3PPP/R3R1K1 w - - 0 1 true: h5f7; pred: h5f7; score: 100000; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 13 - Mate in two 5: r1b2rk1/ppp2p1p/1b1p1B2/5q1Q/2Bp4/2P5/PP3PPP/R3R1K1 w - - 0 1 true: h5f7; pred: h5f7; score: 100000; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 14 - Force move[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 14 - Force move: r2k1Q2/pppn3p/3p4/1B5n/5pb1/5N2/PPPP1qPP/RNBKR3 b - - 0 1 true: d2f1; pred: d2f1; score: -100000; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 14 - Force move: r2k1Q2/pppn3p/3p4/1B5n/5pb1/5N2/PPPP1qPP/RNBKR3 b - - 0 1 true: d2f1; pred: d2f1; score: -100000; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 14 - Force move: r2k1Q2/pppn3p/3p4/1B5n/5pb1/5N2/PPPP1qPP/RNBKR3 b - - 0 1 true: d2f1; pred: d2f1; score: -100000; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(152): [1;32;49minfo: check 'Custom 14 - Force move: r2k1Q2/pppn3p/3p4/1B5n/5pb1/5N2/PPPP1qPP/RNBKR3 b - - 0 1 true: d2f1; pred: d2f1; score: -100000; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 15 - Right attack[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(161): [1;32;49minfo: check 'Custom 15 - Right attack: rnb1kbnr/pppp1ppp/4pq2/4P3/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 3 avoid: f3f4; score: -52; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(161): [1;32;49minfo: check 'Custom 15 - Right attack: rnb1kbnr/pppp1ppp/4pq2/4P3/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 3 avoid: f3f4; score: -85; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(161): [1;32;49minfo: check 'Custom 15 - Right attack: rnb1kbnr/pppp1ppp/4pq2/4P3/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 3 avoid: f3f4; score: -52; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(161): [1;32;49minfo: check 'Custom 15 - Right attack: rnb1kbnr/pppp1ppp/4pq2/4P3/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 3 avoid: f3f4; score: -80; depth: 6' has passed[0;39;49m
+[1;36;49mRunning Custom 16 - Queen blunder[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(161): [1;32;49minfo: check 'Custom 16 - Queen blunder: 3q4/5pk1/8/RK6/8/8/8/8 b - - 7 68 avoid: d1b3; score: 579; depth: 3' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(161): [1;32;49minfo: check 'Custom 16 - Queen blunder: 3q4/5pk1/8/RK6/8/8/8/8 b - - 7 68 avoid: d1b3; score: 566; depth: 4' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(161): [1;32;49minfo: check 'Custom 16 - Queen blunder: 3q4/5pk1/8/RK6/8/8/8/8 b - - 7 68 avoid: d1b3; score: 581; depth: 5' has passed[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(161): [1;32;49minfo: check 'Custom 16 - Queen blunder: 3q4/5pk1/8/RK6/8/8/8/8 b - - 7 68 avoid: d1b3; score: 573; depth: 6' has passed[0;39;49m
+[1;34;49m/home/travis/build/IlyaGusev/aika/tests/search.cpp(136): Leaving test case "custom_epd"; testing time: 10643431us
+[0;39;49m[1;34;49m/home/travis/build/IlyaGusev/aika/tests/search.cpp(167): Entering test case "bratko_kopec"
+[0;39;49m[1;36;49mRunning BK.01[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;32;49minfo: check 'BK.01: 1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - - true: d3d8; pred: d3d8' has passed[0;39;49m
+[1;36;49mRunning BK.02[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;33;49mwarning: in "bratko_kopec": BK.02: 3r1k2/4npp1/1ppr3p/p6P/P2PPPP1/1NR5/5K2/2R5 w - - true: d4d5; pred: e4e5[0;39;49m
+[1;36;49mRunning BK.04[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;32;49minfo: check 'BK.04: rnbqkb1r/p3pppp/1p6/2ppP3/3N4/2P5/PPP1QPPP/R1B1KB1R w KQkq - true: e5e6; pred: e5e6' has passed[0;39;49m
+[1;36;49mRunning BK.06[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;33;49mwarning: in "bratko_kopec": BK.06: 2r3k1/pppR1pp1/4p3/4P1P1/5P2/1P4K1/P1P5/8 w - - true: g5g6; pred: g3g4[0;39;49m
+[1;36;49mRunning BK.08[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;33;49mwarning: in "bratko_kopec": BK.08: 4b3/p3kp2/6p1/3pP2p/2pP1P2/4K1P1/P3N2P/8 w - - true: f4f5; pred: e2c3[0;39;49m
+[1;36;49mRunning BK.12[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;32;49minfo: check 'BK.12: r3r1k1/ppqb1ppp/8/4p1NQ/8/2P5/PP3PPP/R3R1K1 b - - true: d2f4; pred: d2f4' has passed[0;39;49m
+[1;36;49mRunning BK.13[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;33;49mwarning: in "bratko_kopec": BK.13: r2q1rk1/4bppp/p2p4/2pP4/3pP3/3Q4/PP1B1PPP/R3R1K1 w - - true: b2b4; pred: d2f4[0;39;49m
+[1;36;49mRunning BK.14[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;32;49minfo: check 'BK.14: rnb2r1k/pp2p2p/2pp2p1/q2P1p2/8/1Pb2NP1/PB2PPBP/R2Q1RK1 w - - true: d1d2; pred: d1d2' has passed[0;39;49m
+[1;36;49mRunning BK.15[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;32;49minfo: check 'BK.15: 2r3k1/1p2q1pp/2b1pr2/p1pp4/6Q1/1P1PP1R1/P1PN2PP/5RK1 w - - true: g4g7; pred: g4g7' has passed[0;39;49m
+[1;36;49mRunning BK.16[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;32;49minfo: check 'BK.16: r1bqkb1r/4npp1/p1p4p/1p1pP1B1/8/1B6/PPPN1PPP/R2Q1RK1 w kq - true: d2e4; pred: d2e4' has passed[0;39;49m
+[1;36;49mRunning BK.19[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;32;49minfo: check 'BK.19: 3rr3/2pq2pk/p2p1pnp/8/2QBPP2/1P6/P5PP/4RRK1 b - - true: e1e5; pred: e1e5' has passed[0;39;49m
+[1;36;49mRunning BK.24[0;39;49m
+/home/travis/build/IlyaGusev/aika/tests/search.cpp(182): [1;32;49minfo: check 'BK.24: r2qnrnk/p2b2b1/1p1p2pp/2pPpp2/1PP1P3/PRNBB3/3QNPPP/5RK1 w - - true: f2f4; pred: f2f4' has passed[0;39;49m
+[1;36;49mBratko-Kopec: 8/12[0;39;49m
+[1;34;49m/home/travis/build/IlyaGusev/aika/tests/search.cpp(167): Leaving test case "bratko_kopec"; testing time: 38307116us
+[0;39;49m[1;34;49mLeaving test module "search"; testing time: 160214713us
+[0;39;49m
