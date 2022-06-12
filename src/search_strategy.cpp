@@ -12,12 +12,14 @@ TMoveInfo TSearchStrategy::Search(
     int alpha,
     int beta
 ) {
+    // Saving variables
     const int alphaOrig = alpha;
     const auto& position = node.Position;
     const auto& board = position.GetBoard();
-    const size_t depth = node.Depth;
+    const int depth = node.Depth;
     const size_t ply = node.Ply;
 
+    // TT lookup
     if (const auto ttNode = TranspositionTable.Find(position, depth)) {
         const auto& nodeType = ttNode->Type;
         const auto& nodeMove = ttNode->Move;
@@ -38,6 +40,7 @@ TMoveInfo TSearchStrategy::Search(
     const auto& theirBoard = position.GetThemBoard();
     const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
 
+    // Eval for leaves
     const int staticScore = Evaluate(
         position, ourLegalMoves,
         theirLegalMoves, Config.EnablePST
@@ -47,20 +50,20 @@ TMoveInfo TSearchStrategy::Search(
         return {staticScore};
     }
 
+    // Continue search in leaves for positions with captures
     if (depth == 0) {
-        if (Config.QuiescenceSearchDepth != 0) {
-            TSearchNode qNode(position, Config.QuiescenceSearchDepth, 0);
-            return QuiescenceSearch(qNode, alpha, beta);
-        }
-        return {staticScore};
+        TSearchNode qNode(position, depth, ply);
+        return QuiescenceSearch(qNode, alpha, beta);
     }
 
+    // Move collection and ordering
     std::multimap<int, TSearchNode> children;
     for (const auto& move : ourLegalMoves) {
         int score = CalcMoveOrder(position, move, node.Move);
         children.emplace(score, TSearchNode(position, move, depth - 1, ply + 1));
     }
 
+    // Alpha-beta negamax
     TMoveInfo bestMoveInfo(MIN_SCORE_VALUE - 1);
     for (auto& [_, child] : children) {
         UNUSED(_);
@@ -86,6 +89,8 @@ TMoveInfo TSearchStrategy::Search(
             alpha = std::max(alpha, ourScore);
         }
     }
+
+    // TT fill
     if (Config.EnableTT) {
         TTranspositionTable::ENodeType nodeType = TTranspositionTable::ENodeType::PV;
         if (bestMoveInfo.Score <= alphaOrig) {
@@ -108,14 +113,15 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
     const auto& ourLegalMoves = board.GenerateLegalMoves();
     const auto& theirBoard = position.GetThemBoard();
     const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
-    const size_t depth = node.Depth;
+    const int depth = node.Depth;
     const size_t ply = node.Ply;
 
     const int staticScore = Evaluate(
         position, ourLegalMoves,
-        theirLegalMoves, Config.EnablePST);
+        theirLegalMoves, Config.EnablePST
+    );
 
-    if (IsTerminal(position, ourLegalMoves, theirLegalMoves) || (depth == 0)) {
+    if (IsTerminal(position, ourLegalMoves, theirLegalMoves) || (-depth == Config.QuiescenceSearchDepth)) {
         return {staticScore};
     }
     if (Config.EnableAlphaBeta && staticScore >= beta) {
@@ -207,7 +213,7 @@ std::optional<TMoveInfo> TSearchStrategy::MakeMove(
     const lczero::PositionHistory& history
 ) {
     auto timerStart = std::chrono::high_resolution_clock::now();
-    size_t currentDepth = 0;
+    int currentDepth = 0;
     HistoryHeuristics.Clear();
     TMoveInfo move;
     while (currentDepth <= Config.Depth) {

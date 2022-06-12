@@ -12,20 +12,20 @@
 struct TSearchNode {
     lczero::Position Position;
     lczero::Move Move;
-    size_t Depth = 0;
+    int Depth = 0;
     size_t Ply = 0;
     mutable size_t TreeNodesCount = 1;
 
     TSearchNode(
         const lczero::Position& oldPosition,
         const lczero::Move& move,
-        size_t depth,
+        int depth,
         size_t ply
     )
         : Position(oldPosition, move), Move(move), Depth(depth), Ply(ply)
     {}
 
-    TSearchNode(const lczero::Position& position, size_t depth, size_t ply)
+    TSearchNode(const lczero::Position& position, int depth, size_t ply)
         : Position(position), Move(), Depth(depth), Ply(ply)
     {}
 };

@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( time_benchmark )
     const std::string fen = "r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -";
     const std::string move = "f4f5";
 
-    auto bestMove = GetFenBestMove(fen, 6, true);
+    auto bestMove = GetFenBestMove(fen, 7, true);
 
     BOOST_WARN_MESSAGE(bestMove.TimeMs < 1000, "" << bestMove.TimeMs << " ms");
     BOOST_WARN_EQUAL(bestMove.Move.as_string(), move);
