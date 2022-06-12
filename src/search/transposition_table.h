@@ -11,7 +11,8 @@ public:
     enum class ENodeType : short {
         Unknown,
         PV,
-        Cut
+        Cut,
+        All
     };
 
     struct TNode {

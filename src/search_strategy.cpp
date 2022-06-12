@@ -12,6 +12,7 @@ TMoveInfo TSearchStrategy::Search(
     int alpha,
     int beta
 ) {
+    const int alphaOrig = alpha;
     const auto& position = node.Position;
     const auto& board = position.GetBoard();
     const size_t depth = node.Depth;
@@ -28,6 +29,8 @@ TMoveInfo TSearchStrategy::Search(
             return nodeMove;
         } else if (nodeType == TTranspositionTable::ENodeType::Cut && nodeMove.Score >= beta) {
             return nodeMove;
+        } else if (nodeType == TTranspositionTable::ENodeType::All && nodeMove.Score <= alpha) {
+            return nodeMove;
         }
     }
 
@@ -37,7 +40,8 @@ TMoveInfo TSearchStrategy::Search(
 
     const int staticScore = Evaluate(
         position, ourLegalMoves,
-        theirLegalMoves, Config.EnablePST);
+        theirLegalMoves, Config.EnablePST
+    );
 
     if (IsTerminal(position, ourLegalMoves, theirLegalMoves)) {
         return {staticScore};
@@ -86,8 +90,15 @@ TMoveInfo TSearchStrategy::Search(
         }
     }
     if (Config.EnableTT) {
-        TranspositionTable.Insert(position, bestMoveInfo, depth,
-            TTranspositionTable::ENodeType::PV);
+        if (bestMoveInfo.Score <= alphaOrig) {
+            TranspositionTable.Insert(position, bestMoveInfo, depth,
+                TTranspositionTable::ENodeType::All
+            );
+        } else {
+            TranspositionTable.Insert(position, bestMoveInfo, depth,
+                TTranspositionTable::ENodeType::PV
+            );
+        }
     }
     return bestMoveInfo;
 }
