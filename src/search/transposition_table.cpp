@@ -2,24 +2,24 @@
 
 void TTranspositionTable::Insert(
     const lczero::Position& position,
-    const TMoveInfo& bestMove,
+    const TMoveInfo& move,
     size_t depth,
     ENodeType type
 ) {
     auto it = Data.find(position);
-    if (it == Data.end() || it->second.Depth < depth) {
-        Data.insert_or_assign(position, TNode(depth, bestMove, type));
+    if (it == Data.end() || depth > it->second.Depth) {
+        Data.insert_or_assign(position, TNode(depth, move, type));
     }
 }
 
-std::optional<TMoveInfo> TTranspositionTable::Find(
+std::optional<TTranspositionTable::TNode> TTranspositionTable::Find(
     const lczero::Position& position,
     size_t depth,
     ENodeType type
 ) const {
     auto it = Data.find(position);
     if (it != Data.end() && it->second.Depth >= depth && it->second.Type == type) {
-        return it->second.BestMove;
+        return it->second;
     }
     return std::nullopt;
 }

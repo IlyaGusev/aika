@@ -8,7 +8,7 @@
 
 class TTranspositionTable {
 public:
-    enum class ENodeType {
+    enum class ENodeType : short {
         Unknown,
         PV,
         Cut
@@ -16,11 +16,13 @@ public:
 
     struct TNode {
         size_t Depth;
-        TMoveInfo BestMove;
+        TMoveInfo Move;
         ENodeType Type;
 
-        TNode(size_t depth, TMoveInfo bestMove, ENodeType type)
-            : Depth(depth), BestMove(bestMove), Type(type)
+        explicit TNode(size_t depth, const TMoveInfo& move, ENodeType type)
+            : Depth(depth)
+            , Move(move)
+            , Type(type)
         {}
     };
 
@@ -47,11 +49,11 @@ public:
 
     void Insert(
         const lczero::Position& position,
-        const TMoveInfo& bestMove,
+        const TMoveInfo& move,
         size_t depth,
         ENodeType type
     );
-    std::optional<TMoveInfo> Find(
+    std::optional<TNode> Find(
         const lczero::Position& position,
         size_t depth = 0,
         ENodeType type = ENodeType::PV

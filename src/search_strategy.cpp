@@ -17,22 +17,22 @@ TMoveInfo TSearchStrategy::Search(
     const size_t depth = node.Depth;
     const size_t ply = node.Ply;
 
-    const auto pvMoveInfo = TranspositionTable.Find(
+    const auto pvNode = TranspositionTable.Find(
         position,
         depth,
         TTranspositionTable::ENodeType::PV
     );
-    if (pvMoveInfo) {
-        return *pvMoveInfo;
+    if (pvNode) {
+        return pvNode->Move;
     }
 
-    const auto cutMoveInfo = TranspositionTable.Find(
+    const auto cutNode = TranspositionTable.Find(
         position,
         depth,
         TTranspositionTable::ENodeType::Cut
     );
-    if (cutMoveInfo && cutMoveInfo->Score >= beta) {
-        return *cutMoveInfo;
+    if (cutNode && cutNode->Move.Score >= beta) {
+        return cutNode->Move;
     }
 
     const auto& ourLegalMoves = board.GenerateLegalMoves();
@@ -166,8 +166,8 @@ int TSearchStrategy::CalcMoveOrder(
     int score = 0;
 
     // Hash move
-    std::optional<TMoveInfo> bm = TranspositionTable.Find(position);
-    if (bm && bm->Move == move) {
+    std::optional<TTranspositionTable::TNode> bm = TranspositionTable.Find(position);
+    if (bm && bm->Move.Move == move) {
         score += 10000;
         return -score;
     }
