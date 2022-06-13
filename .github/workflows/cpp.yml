@@ -16,8 +16,16 @@ jobs:
         git pull --recurse-submodules
         git submodule update --remote --recursive
     - name: Install requirements
-      run: sudo apt-get install -y cmake build-essential libboost-program-options-dev libboost-container-dev libjsoncpp-dev uuid-dev
-    - name: make
+      run: >
+        sudo apt-get install -y
+        cmake
+        build-essential
+        libboost-program-options-dev
+        libboost-filesystem-dev
+        libboost-container-dev
+        libjsoncpp-dev
+        uuid-dev
+    - name: CMake and Make
       run: |
         mkdir -p build
         cd build && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE .. && make -j4 && cd ..
