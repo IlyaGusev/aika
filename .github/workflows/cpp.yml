@@ -23,6 +23,7 @@ jobs:
         libboost-program-options-dev
         libboost-filesystem-dev
         libboost-container-dev
+        libboost-test-dev
         libjsoncpp-dev
         uuid-dev
     - name: CMake and Make
