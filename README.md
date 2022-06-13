@@ -1,5 +1,5 @@
 # Aika
-[![Tests Status](https://github.com/IlyaGusev/aika/actions/workflows/cpp.yml/badge.svg)](https://github.com/IlyaGusev/summarus/actions/workflows/cpp.yml)
+[![Tests Status](https://github.com/IlyaGusev/aika/actions/workflows/cpp.yml/badge.svg)](https://github.com/IlyaGusev/aika/actions/workflows/cpp.yml)
 
 Amateur level C++ chess engine with web GUI on top of lc0 board representation
 
