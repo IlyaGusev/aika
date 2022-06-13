@@ -28,6 +28,8 @@ TMoveInfo GetFenBestMove(const std::string& fen, int depth = 1, bool useAllFeatu
     if (useAllFeatures) {
         config.EnableTT = true;
         config.EnablePST = true;
+        config.EnableNullMove = false;
+        config.EnableLMR = true;
         config.QuiescenceSearchDepth = 10000;
     }
     TSearchStrategy strategy(config);

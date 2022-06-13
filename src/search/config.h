@@ -11,6 +11,9 @@ struct TSearchConfig {
     bool EnableAlphaBeta = false;
     bool EnablePST = false;
     bool EnableTT = false;
+    bool EnableNullMove = false;
+    bool NullMoveDepthReduction = 3;
+    bool EnableLMR = false;
 
     TSearchConfig() = default;
     explicit TSearchConfig(const std::string& configFile) {

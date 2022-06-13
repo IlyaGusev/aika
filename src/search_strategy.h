@@ -22,11 +22,17 @@ struct TSearchNode {
         int depth,
         size_t ply
     )
-        : Position(oldPosition, move), Move(move), Depth(depth), Ply(ply)
+        : Position(oldPosition, move)
+        , Move(move)
+        , Depth(depth)
+        , Ply(ply)
     {}
 
     TSearchNode(const lczero::Position& position, int depth, size_t ply)
-        : Position(position), Move(), Depth(depth), Ply(ply)
+        : Position(position)
+        , Move()
+        , Depth(depth)
+        , Ply(ply)
     {}
 };
 

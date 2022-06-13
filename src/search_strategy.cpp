@@ -18,6 +18,7 @@ TMoveInfo TSearchStrategy::Search(
     const auto& board = position.GetBoard();
     const int depth = node.Depth;
     const size_t ply = node.Ply;
+    const bool isUnderCheck = board.IsUnderCheck();
     ENSURE(depth >= 0, "Incorrect depth for Search");
 
     // TT lookup
@@ -56,26 +57,56 @@ TMoveInfo TSearchStrategy::Search(
         return QuiescenceSearch(qNode, alpha, beta);
     }
 
+    // Null move
+    const size_t R = Config.NullMoveDepthReduction;
+    if (Config.EnableNullMove && !isUnderCheck && depth >= R + 1 && staticScore >= beta) {
+        const auto& newPosition = lczero::Position(theirBoard, position.GetRule50Ply(), 0);
+        TSearchNode node(newPosition, lczero::Move(), depth - R - 1, ply + 1);
+        const auto& bestEnemyMove = Search(node, -beta, -beta + 1);
+        const int score = -bestEnemyMove.Score;
+        if (score >= beta) {
+            return {lczero::Move(), score};
+        }
+    }
+
     // Move collection and ordering
-    std::multimap<int, TSearchNode> children;
+    std::multimap<int, lczero::Move> moves;
+    const auto& prevMove = node.Move;
     for (const auto& move : ourLegalMoves) {
-        int score = CalcMoveOrder(position, move, node.Move);
-        children.emplace(score, TSearchNode(position, move, depth - 1, ply + 1));
+        const int score = CalcMoveOrder(position, move, prevMove);
+        moves.emplace(score, move);
     }
 
     // Alpha-beta negamax
+    size_t moveNumber = 0;
     TMoveInfo bestMoveInfo(MIN_SCORE_VALUE - 1);
-    for (auto& [_, child] : children) {
+    for (auto& [_, ourMove] : moves) {
         UNUSED(_);
-        const auto& bestEnemyMove = Search(child, -beta, -alpha);
-        const int bestEnemyScore = bestEnemyMove.Score;
-        node.TreeNodesCount += child.TreeNodesCount;
 
-        const auto& ourMove = child.Move;
-        const int ourScore = -bestEnemyScore;
+        const bool isCapture = IsCapture(position, ourMove);
+        const bool isPromotion = IsPromotion(ourMove);
+
+        int ourScore = 0;
+        size_t nodesCount = 0;
+        if (Config.EnableLMR && moveNumber >= 5 && ply >= 2 && !isCapture && !isPromotion && !isUnderCheck && depth >= 2) {
+            TSearchNode lmrChild(position, ourMove, depth - 2, ply + 1);
+            ourScore = -Search(lmrChild, -beta, -alpha).Score;
+            nodesCount = lmrChild.TreeNodesCount;
+            if(ourScore >= alpha) {
+                TSearchNode child(position, ourMove, depth - 1, ply + 1);
+                ourScore = -Search(child, -beta, -alpha).Score;
+                nodesCount = child.TreeNodesCount;
+            }
+        } else {
+            TSearchNode child(position, ourMove, depth - 1, ply + 1);
+            ourScore = -Search(child, -beta, -alpha).Score;
+            nodesCount = child.TreeNodesCount;
+        }
+
+        node.TreeNodesCount += nodesCount;
         TMoveInfo ourMoveInfo(ourMove, ourScore);
         if (Config.EnableAlphaBeta && ourScore >= beta) {
-            if (!IsCapture(position, ourMove) && !IsPromotion(ourMove)) {
+            if (!isCapture && !isPromotion) {
                 const int side = position.IsBlackToMove();
                 EPieceType fromPiece = GetPieceType(board, ourMove.from());
                 HistoryHeuristics.Add(side, fromPiece, ourMove, depth);
@@ -88,6 +119,7 @@ TMoveInfo TSearchStrategy::Search(
             bestMoveInfo = ourMoveInfo;
             alpha = std::max(alpha, ourScore);
         }
+        moveNumber += 1;
     }
 
     // TT fill
