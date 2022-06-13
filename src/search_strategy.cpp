@@ -246,18 +246,19 @@ int TSearchStrategy::CalcMoveOrder(
         return -score;
     }
 
-    // History heuristics
-    EPieceType fromPiece = GetPieceType(position.GetBoard(), move.from());
-    int side = position.IsBlackToMove();
-    int historyScore = HistoryHeuristics.Get(side, fromPiece, move);
-    if (historyScore != 0) {
-        score += 500 + historyScore;
-    }
+    // History heuristics and counter moves
+    if (Config.EnableHH) {
+        EPieceType fromPiece = GetPieceType(position.GetBoard(), move.from());
+        int side = position.IsBlackToMove();
+        int historyScore = HistoryHeuristics.Get(side, fromPiece, move);
+        if (historyScore != 0) {
+            score += 500 + historyScore;
+        }
 
-    // Counter moves
-    auto counterMove = HistoryHeuristics.GetCounterMove(prevMove);
-    if (move == counterMove) {
-        score += 100;
+        auto counterMove = HistoryHeuristics.GetCounterMove(prevMove);
+        if (move == counterMove) {
+            score += 100;
+        }
     }
 
     return -score;

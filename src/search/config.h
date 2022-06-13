@@ -14,6 +14,7 @@ struct TSearchConfig {
     bool EnableNullMove = false;
     bool NullMoveDepthReduction = 3;
     bool EnableLMR = false;
+    bool EnableHH = false;
 
     TSearchConfig() = default;
     explicit TSearchConfig(const std::string& configFile) {
