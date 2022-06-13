@@ -16,11 +16,11 @@ public:
     };
 
     struct TNode {
-        size_t Depth;
+        int Depth;
         TMoveInfo Move;
         ENodeType Type;
 
-        explicit TNode(size_t depth, const TMoveInfo& move, ENodeType type)
+        explicit TNode(int depth, const TMoveInfo& move, ENodeType type)
             : Depth(depth)
             , Move(move)
             , Type(type)

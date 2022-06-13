@@ -144,32 +144,27 @@ constexpr std::array<unsigned char, static_cast<size_t>(EPieceType::Count)>
     GAMEPHASE_INC{{0, 1, 1, 2, 4, 0}};
 
 int CalcPSTScore(const lczero::Position& position) {
-    const auto& board = position.GetBoard();
     std::array<int, 2> midgameScores;
     std::array<int, 2> endgameScores;
     midgameScores.fill(0);
     endgameScores.fill(0);
 
     int gamePhase = 0;
+    const auto& board = position.GetBoard();
     const auto& ours = board.ours();
     const auto& theirs = board.theirs();
     constexpr size_t midgame = static_cast<size_t>(EGamePhase::Midgame);
     constexpr size_t endgame = static_cast<size_t>(EGamePhase::Endgame);
-    for (int i = 7; i >= 0; --i) {
-        for (int j = 0; j < 8; ++j) {
-            bool isOurs = (ours.get(i, j));
-            bool isTheirs = theirs.get(i, j);
+    for (char row = 7; row >= 0; --row) {
+        for (char col = 0; col < 8; ++col) {
+            bool isOurs = ours.get(row, col);
+            bool isTheirs = theirs.get(row, col);
             if (!isOurs && !isTheirs) {
                 continue;
             }
-            size_t pieceType = static_cast<size_t>(GetPieceType(board, lczero::BoardSquare(i, j)));
-            unsigned char row = i;
-            unsigned char col = j;
-            if (isOurs) {
-                row = (7 - row);
-            }
-            const unsigned char square = row * 8 + col;
-            size_t side = static_cast<size_t>(isTheirs);
+            const size_t pieceType = static_cast<size_t>(GetPieceType(board, lczero::BoardSquare(row, col)));
+            const unsigned char square = ((isOurs) ? (7 - row) : row) * 8 + col;
+            const size_t side = static_cast<size_t>(isTheirs);
             midgameScores[side] += MATERIAL_SCORES[pieceType][midgame] +
                 PST_POSITIONS[pieceType][midgame][square];
             endgameScores[side] += MATERIAL_SCORES[pieceType][endgame] +
@@ -177,12 +172,11 @@ int CalcPSTScore(const lczero::Position& position) {
             gamePhase += GAMEPHASE_INC[pieceType];
         }
     }
-    int mgScore = midgameScores[0] - midgameScores[1];
-    int egScore = endgameScores[0] - endgameScores[1];
+    const int mgScore = midgameScores[0] - midgameScores[1];
+    const int egScore = endgameScores[0] - endgameScores[1];
 
-    int mgPhase = gamePhase;
-    if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
-    int egPhase = 24 - mgPhase;
+    const int mgPhase = std::min(gamePhase, 24); // in case of early promotion
+    const int egPhase = 24 - mgPhase;
 
     return (mgScore * mgPhase + egScore * egPhase) / 24;
 }
