@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE( time_benchmark )
 
     auto bestMove = GetFenBestMove(fen, 7, true);
 
-    BOOST_WARN_MESSAGE(bestMove.TimeMs < 1000, "" << bestMove.TimeMs << " ms");
+    BOOST_WARN_MESSAGE(bestMove.TimeMs < 1000, "" << bestMove.TimeMs << " ms, " << bestMove.NodesCount << " nodes");
     BOOST_WARN_EQUAL(bestMove.Move.as_string(), move);
 }
 

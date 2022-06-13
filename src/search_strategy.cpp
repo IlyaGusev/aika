@@ -70,19 +70,20 @@ TMoveInfo TSearchStrategy::Search(
     }
 
     // Move collection and ordering
-    std::multimap<int, lczero::Move> moves;
+    std::vector<TMoveInfo> moves;
+    moves.reserve(ourLegalMoves.size());
     const auto& prevMove = node.Move;
     for (const auto& move : ourLegalMoves) {
         const int score = CalcMoveOrder(position, move, prevMove);
-        moves.emplace(score, move);
+        moves.emplace_back(move, score);
     }
+    std::stable_sort(moves.begin(), moves.end());
 
     // Alpha-beta negamax
     size_t moveNumber = 0;
     TMoveInfo bestMoveInfo(MIN_SCORE_VALUE - 1);
-    for (auto& [_, ourMove] : moves) {
-        UNUSED(_);
-
+    for (const auto& moveInfo : moves) {
+        const auto& ourMove = moveInfo.Move;
         const bool isCapture = IsCapture(position, ourMove);
         const bool isPromotion = IsPromotion(ourMove);
 
@@ -173,29 +174,32 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
         return {beta};
     }
 
-    std::multimap<int, TSearchNode> children;
+    std::vector<TMoveInfo> moves;
+    moves.reserve(ourLegalMoves.size());
     for (const auto& move : ourLegalMoves) {
         if (!IsCapture(position, move)) {
             continue;
         }
         if (EvaluateCaptureSEE(position, move) >= 0) {
             int score = CalcMoveOrder(position, move, node.Move);
-            children.emplace(score, TSearchNode(position, move, depth - 1, ply + 1));
+            moves.emplace_back(move, score);
         }
     }
+    std::stable_sort(moves.begin(), moves.end());
 
-    if (children.empty()) {
+    if (moves.empty()) {
         return {staticScore};
     }
 
     TMoveInfo bestMoveInfo(MIN_SCORE_VALUE - 1);
-    for (auto& [_, child] : children) {
-        UNUSED(_);
+    for (const auto& move : moves) {
+        const auto& ourMove = move.Move;
+
+        TSearchNode child(position, ourMove, depth - 1, ply + 1);
         const auto& bestEnemyMove = QuiescenceSearch(child, -beta, -alpha);
         const int bestEnemyScore = bestEnemyMove.Score;
         node.TreeNodesCount += child.TreeNodesCount;
 
-        const auto& ourMove = child.Move;
         const int ourScore = -bestEnemyScore;
         TMoveInfo ourMoveInfo(ourMove, ourScore);
 
