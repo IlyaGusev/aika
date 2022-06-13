@@ -8,13 +8,14 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
+    - name: Git Sumbodule Update
+      run: |
+        git submodule update --remote --recursive
     - name: Install requirements
-      run: sudo apt-get install -y cmake build-essential libboost-all-dev libjsoncpp-dev uuid-dev
+      run: sudo apt-get install -y cmake build-essential libboost-program-options-dev libboost-container-dev libjsoncpp-dev uuid-dev
     - name: make
       run: |
         mkdir -p build
