@@ -29,13 +29,19 @@ public:
         , HistoryHeuristics(historyHeuristics)
     {}
 
-    std::vector<TMoveInfo> Order(const lczero::MoveList& moves) {
+    std::vector<TMoveInfo> Order(const lczero::MoveList& moves) const {
         std::vector<TMoveInfo> movesScores;
         movesScores.reserve(moves.size());
         for (const lczero::Move& move : moves) {
             movesScores.emplace_back(move, CalcMoveOrder(move));
         }
-        std::stable_sort(movesScores.begin(), movesScores.end());
+        std::stable_sort(movesScores.begin(), movesScores.end(),
+            [](const TMoveInfo & a, const TMoveInfo& b) -> bool {
+                if (a.Score < b.Score) return true;
+                if (a.Score > b.Score) return false;
+                return (a.Move.as_packed_int() < b.Move.as_packed_int());
+            }
+        );
         return movesScores;
     }
 

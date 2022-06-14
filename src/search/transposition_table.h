@@ -3,7 +3,6 @@
 #include <strategy.h>
 #include <util.h>
 
-#include <unordered_map>
 #include <boost/unordered_map.hpp>
 
 class TTranspositionTable {
@@ -16,9 +15,9 @@ public:
     };
 
     struct TNode {
-        int Depth;
+        int Depth = 0;
         TMoveInfo Move;
-        ENodeType Type;
+        ENodeType Type = ENodeType::Unknown;
 
         explicit TNode(int depth, const TMoveInfo& move, ENodeType type)
             : Depth(depth)
@@ -29,7 +28,7 @@ public:
 
     struct TPositionHasher {
         uint64_t operator() (const lczero::Position& pos) const {
-            return pos.Hash();
+            return pos.GetBoard().Hash();
         }
     };
 
@@ -38,7 +37,7 @@ public:
             const lczero::Position& p1,
             const lczero::Position& p2
         ) const {
-            return p1.GetBoard() == p2.GetBoard() && p1.GetRepetitions() == p2.GetRepetitions();
+            return p1.GetBoard() == p2.GetBoard();
         }
     };
 

@@ -29,7 +29,8 @@ TMoveInfo GetFenBestMove(const std::string& fen, int depth = 1, bool useAllFeatu
         config.EnableTT = true;
         config.EnablePST = true;
         config.EnableNullMove = false;
-        config.EnableLMR = true;
+        config.EnableLMR = false;
+        config.EnableHH = false;
         config.QuiescenceSearchDepth = 10000;
     }
     TSearchStrategy strategy(config);
@@ -108,6 +109,16 @@ BOOST_AUTO_TEST_CASE( time_benchmark )
 
     BOOST_WARN_MESSAGE(bestMove.TimeMs < 1000, "" << bestMove.TimeMs << " ms, " << bestMove.NodesCount << " nodes");
     BOOST_WARN_EQUAL(bestMove.Move.as_string(), move);
+}
+
+BOOST_AUTO_TEST_CASE( deterministic_benchmark )
+{
+    const std::string fen = "r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -";
+    const std::string move = "f4f5";
+
+    auto bestMove = GetFenBestMove(fen, 7, true);
+    size_t nodesCount = bestMove.NodesCount;
+    BOOST_TEST_MESSAGE("Determinisitc benchmark: " << nodesCount << " nodes");
 }
 
 BOOST_AUTO_TEST_CASE( alpha_beta )

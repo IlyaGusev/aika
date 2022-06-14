@@ -62,8 +62,9 @@ TMoveInfo TSearchStrategy::Search(
     const size_t R = Config.NullMoveDepthReduction;
     if (Config.EnableNullMove && !isUnderCheck && depth >= R + 1 && staticScore >= beta) {
         const auto& newPosition = lczero::Position(theirBoard, position.GetRule50Ply(), 0);
-        TSearchNode node(newPosition, lczero::Move(), depth - R - 1, ply + 1);
-        const auto& bestEnemyMove = Search(node, -beta, -beta + 1);
+        TSearchNode searchNode(newPosition, lczero::Move(), depth - R - 1, ply + 1);
+        const auto& bestEnemyMove = Search(searchNode, -beta, -beta + 1);
+        node.TreeNodesCount += searchNode.TreeNodesCount;
         const int score = -bestEnemyMove.Score;
         if (score >= beta) {
             return {lczero::Move(), score};
@@ -91,23 +92,28 @@ TMoveInfo TSearchStrategy::Search(
         const bool isPromotion = IsPromotion(ourMove);
 
         int ourScore = 0;
-        size_t nodesCount = 0;
-        if (Config.EnableLMR && moveNumber >= 5 && ply >= 2 && !isCapture && !isPromotion && !isUnderCheck && depth >= 2) {
+        bool lmrConditions = true
+            && moveNumber >= 5
+            && ply >= 2
+            && !isCapture
+            && !isPromotion
+            && !isUnderCheck
+            && depth >= 2;
+        if (Config.EnableLMR && lmrConditions) {
             TSearchNode lmrChild(position, ourMove, depth - 2, ply + 1);
             ourScore = -Search(lmrChild, -beta, -alpha).Score;
-            nodesCount = lmrChild.TreeNodesCount;
+            node.TreeNodesCount += lmrChild.TreeNodesCount;
             if(ourScore >= alpha) {
                 TSearchNode child(position, ourMove, depth - 1, ply + 1);
                 ourScore = -Search(child, -beta, -alpha).Score;
-                nodesCount = child.TreeNodesCount;
+                node.TreeNodesCount += child.TreeNodesCount;
             }
         } else {
             TSearchNode child(position, ourMove, depth - 1, ply + 1);
             ourScore = -Search(child, -beta, -alpha).Score;
-            nodesCount = child.TreeNodesCount;
+            node.TreeNodesCount += child.TreeNodesCount;
         }
 
-        node.TreeNodesCount += nodesCount;
         TMoveInfo ourMoveInfo(ourMove, ourScore);
         if (Config.EnableAlphaBeta && ourScore >= beta) {
             if (!isCapture && !isPromotion) {

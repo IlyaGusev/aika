@@ -14,7 +14,7 @@ struct TMoveInfo {
     int Depth = 0; // Negative values in QSearch
 
     TMoveInfo() = default;
-    TMoveInfo(const lczero::Move& move) : Move(move) {}
+    explicit TMoveInfo(const lczero::Move& move) : Move(move) {}
     TMoveInfo(int score) : Move(), Score(score) {}
     TMoveInfo(const lczero::Move& move, int score) : Move(move), Score(score) {}
     TMoveInfo(const TMoveInfo& other) = default;
