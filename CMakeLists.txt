@@ -45,6 +45,7 @@ set(SOURCE_FILES
     src/search/see.cpp
     src/search/history_heuristics.cpp
     src/search/transposition_table.cpp
+    src/search/move_ordering.cpp
 )
 
 set(LIB_LIST

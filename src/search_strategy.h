@@ -68,12 +68,6 @@ private:
         int beta
     );
 
-    int CalcMoveOrder(
-        const lczero::Position& position,
-        const lczero::Move& move,
-        const lczero::Move& prevMove
-    ) const;
-
 private:
     TTranspositionTable TranspositionTable;
     THistoryHeuristics HistoryHeuristics;

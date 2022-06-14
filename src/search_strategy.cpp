@@ -1,6 +1,7 @@
 #include <search_strategy.h>
 #include <evaluation.h>
 #include <search/see.h>
+#include <search/move_ordering.h>
 
 #include <algorithm>
 #include <chrono>
@@ -70,14 +71,16 @@ TMoveInfo TSearchStrategy::Search(
     }
 
     // Move collection and ordering
-    std::vector<TMoveInfo> moves;
-    moves.reserve(ourLegalMoves.size());
+    const auto ttNode = TranspositionTable.Find(position);
+    const auto ttMove = ttNode ? std::make_optional(ttNode->Move.Move) : std::nullopt;
     const auto& prevMove = node.Move;
-    for (const auto& move : ourLegalMoves) {
-        const int score = CalcMoveOrder(position, move, prevMove);
-        moves.emplace_back(move, score);
-    }
-    std::stable_sort(moves.begin(), moves.end());
+    TMoveOrdering moveOrdering(
+        position,
+        prevMove,
+        ttMove,
+        Config.EnableHH ? &HistoryHeuristics : nullptr
+    );
+    const auto& moves = moveOrdering.Order(ourLegalMoves);
 
     // Alpha-beta negamax
     size_t moveNumber = 0;
@@ -174,22 +177,27 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
         return {beta};
     }
 
-    std::vector<TMoveInfo> moves;
-    moves.reserve(ourLegalMoves.size());
+    const auto ttNode = TranspositionTable.Find(position);
+    const auto ttMove = ttNode ? std::make_optional(ttNode->Move.Move) : std::nullopt;
+    const auto& prevMove = node.Move;
+    TMoveOrdering moveOrdering(
+        position,
+        prevMove,
+        ttMove,
+        Config.EnableHH ? &HistoryHeuristics : nullptr
+    );
+    std::vector<lczero::Move> filteredMoves;
+    filteredMoves.reserve(filteredMoves.size());
     for (const auto& move : ourLegalMoves) {
-        if (!IsCapture(position, move)) {
-            continue;
-        }
-        if (EvaluateCaptureSEE(position, move) >= 0) {
-            int score = CalcMoveOrder(position, move, node.Move);
-            moves.emplace_back(move, score);
+        if (IsCapture(position, move) && EvaluateCaptureSEE(position, move) >= 0) {
+            filteredMoves.push_back(move);
         }
     }
-    std::stable_sort(moves.begin(), moves.end());
-
-    if (moves.empty()) {
+    if (filteredMoves.empty()) {
         return {staticScore};
     }
+
+    const auto& moves = moveOrdering.Order(filteredMoves);
 
     TMoveInfo bestMoveInfo(MIN_SCORE_VALUE - 1);
     for (const auto& move : moves) {
@@ -218,50 +226,6 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
         TranspositionTable.Insert(position, bestMoveInfo, depth, alphaOrig, beta);
     }
     return bestMoveInfo;
-}
-
-int TSearchStrategy::CalcMoveOrder(
-    const lczero::Position& position,
-    const lczero::Move& move,
-    const lczero::Move& prevMove
-) const {
-    int score = 0;
-
-    // Hash move
-    std::optional<TTranspositionTable::TNode> bm = TranspositionTable.Find(position);
-    if (bm && bm->Move.Move == move) {
-        score += 10000;
-        return -score;
-    }
-
-    // Promotions
-    if (IsPromotion(move)) {
-        score += 2000 + GetPieceValue(EPieceType::Queen);
-    }
-
-    // Captures
-    if (IsCapture(position, move)) {
-        int captureValue = EvaluateCaptureSEE(position, move);
-        score += 2000 + captureValue;
-        return -score;
-    }
-
-    // History heuristics and counter moves
-    if (Config.EnableHH) {
-        EPieceType fromPiece = GetPieceType(position.GetBoard(), move.from());
-        int side = position.IsBlackToMove();
-        int historyScore = HistoryHeuristics.Get(side, fromPiece, move);
-        if (historyScore != 0) {
-            score += 500 + historyScore;
-        }
-
-        auto counterMove = HistoryHeuristics.GetCounterMove(prevMove);
-        if (move == counterMove) {
-            score += 100;
-        }
-    }
-
-    return -score;
 }
 
 std::optional<TMoveInfo> TSearchStrategy::MakeMove(
