@@ -32,7 +32,7 @@ TMoveInfo GetFenBestMove(const std::string& fen, int depth = 1, bool useAllFeatu
         config.NullMoveDepthReduction = 3;
         config.NullMoveEvalMargin = 0;
         config.EnableLMR = true;
-        config.LMRMinMoveNumber = 15;
+        config.LMRMinMoveNumber = 12;
         config.LMRMinPly = 2;
         config.LMRMinDepth = 2;
         config.EnableHH = false;
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE( custom_epd )
     BOOST_TEST_MESSAGE("Custom suite: " << records.size() << " records");
     for (const auto& record : records) {
         BOOST_TEST_MESSAGE("Running " << record.ID);
-        for (size_t depth = 3; depth <= 6; depth++) {
+        for (size_t depth = 5; depth <= 7; depth++) {
             auto prediction = GetFenBestMove(record.FEN, depth, true);
             if (!record.BestMoves.empty()) {
                 BOOST_CHECK_MESSAGE(
@@ -202,15 +202,14 @@ BOOST_AUTO_TEST_CASE( bratko_kopec )
     BOOST_TEST_MESSAGE("Bratko-Kopec: " << passedCount << "/" << records.size());
 }
 
-/*
-BOOST_AUTO_TEST_CASE( eret )
+/*BOOST_AUTO_TEST_CASE( eret )
 {
     auto fullTimeMs = 0;
     size_t passedCount = 0;
     auto records = ParseSimpleEPD(STR(TEST_PATH)"/data/eret.epd");
     for (const auto& record : records) {
         BOOST_TEST_MESSAGE("Running " << record.ID);
-        auto prediction = GetFenBestMove(record.FEN, 5, true);
+        auto prediction = GetFenBestMove(record.FEN, 7, true);
         fullTimeMs += prediction.TimeMs;
         if (prediction.Move == record.BestMoves[0]) {
             passedCount += 1;
@@ -223,17 +222,16 @@ BOOST_AUTO_TEST_CASE( eret )
         );
     }
     BOOST_TEST_MESSAGE("ERET: " << fullTimeMs << " ms, " << passedCount << "/" << records.size());
-}
-*/
+}*/
 
-/* BOOST_AUTO_TEST_CASE( arasan )
+/*BOOST_AUTO_TEST_CASE( arasan )
 {
     auto fullTimeMs = 0;
     size_t passedCount = 0;
     auto records = ParseSimpleEPD(STR(TEST_PATH)"/data/arasan.epd");
     for (const auto& record : records) {
         BOOST_TEST_MESSAGE("Running " << record.ID);
-        auto prediction = GetFenBestMove(record.FEN, 5, true);
+        auto prediction = GetFenBestMove(record.FEN, 6, true);
         fullTimeMs += prediction.TimeMs;
         if (prediction.Move == record.BestMoves[0]) {
             passedCount += 1;
@@ -246,6 +244,5 @@ BOOST_AUTO_TEST_CASE( eret )
         );
     }
     BOOST_TEST_MESSAGE("Arasan: " << fullTimeMs << " ms, " << passedCount << "/" << records.size());
-}
-*/
+}*/
 

@@ -11,6 +11,10 @@ r1bq2k1/ppp2r1p/2np1pNQ/2bNpp2/2B1P3/3P4/PPP2PPP/R3K2R w KQ - 0 1 bm Nxf6; id "C
 r1bk3r/1pp2ppp/pb1p1n2/n2P4/B3P1q1/2Q2N2/PB3PPP/RN3RK1 w - - 0 1 bm Qxf6; id "Custom 11 - Mate in two 3";
 r2q1k1r/ppp1n1Np/1bnpB2B/8/1P1pb1P1/2P4P/P4P2/R2Q1RK1 w - - 0 1 bm Nh5; id "Custom 12 - Mate in two 4";
 r1b2rk1/ppp2p1p/1b1p1B2/5q1Q/2Bp4/2P5/PP3PPP/R3R1K1 w - - 0 1 bm Qxf7; id "Custom 13 - Mate in two 5";
-r2k1Q2/pppn3p/3p4/1B5n/5pb1/5N2/PPPP1qPP/RNBKR3 b - - 0 1 bm Nxf8; id "Custom 14 - Force move";
-rnb1kbnr/pppp1ppp/4pq2/4P3/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 3 am Qf5; id "Custom 15 - Right attack";
-3q4/5pk1/8/RK6/8/8/8/8 b - - 7 68 am Qb6; id "Custom 16 - Queen blunder";
+r1bqk2r/2ppb1p1/n3P2p/8/2B1nP2/4P3/1PPP3P/RNBQK1NR w KQkq - 0 10 bm Qh5; id "Custom 14 - Mate in three 1";
+3qr2k/1p3rbp/2p3p1/p7/P2pBNn1/1P3n2/6P1/B1Q1RR1K b - - 1 30 bm Qh4; id "Custom 15 - Mate in four 1";
+rn3rk1/p7/bp2p1qp/3pPP2/P2Nn1Q1/1P3N1P/5PBK/3Rb3 w - - 2 26 bm Qxg6; id "Custom 16 - Mate in four 2";
+4r1rk/1bq5/pp5p/P2pPp2/3Nn2Q/1P1n1N1P/2R2P1K/5BR1 w - - 2 34 bm Rxg8; id "Custom 17 - Mate in four 3";
+r2k1Q2/pppn3p/3p4/1B5n/5pb1/5N2/PPPP1qPP/RNBKR3 b - - 0 1 bm Nxf8; id "Custom 18 - Force move";
+rnb1kbnr/pppp1ppp/4pq2/4P3/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 3 am Qf5; id "Custom 19 - Right attack";
+3q4/5pk1/8/RK6/8/8/8/8 b - - 7 68 am Qb6; id "Custom 20 - Queen blunder";
