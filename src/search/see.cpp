@@ -46,15 +46,44 @@ int EvaluateCaptureSEE(
     const lczero::Position& position,
     const lczero::Move& move
 ) {
+    ENSURE(UNLIKELY(IsCapture(position, move)),
+        "Not a capture in capture SEE, move: " << move.as_string()
+        << position.DebugString());
+
     const auto& board = position.GetBoard();
-    auto toSquare =  move.to();
+    auto toSquare = move.to();
 
     const EPieceType toPiece = GetPieceType(board, toSquare);
     int toValue = GetPieceValue(EPieceType::Pawn);
     if (LIKELY(toPiece != EPieceType::Unknown)) {
         toValue = GetPieceValue(board, toSquare);
     }
+
     lczero::Position newPosition(position, move);
     toSquare.Mirror();
     return toValue - EvaluateStaticExchange(newPosition, toSquare);
+}
+
+int EvaluateQuietSEE(
+    const lczero::Position& position,
+    const lczero::Move& move
+) {
+    ENSURE(UNLIKELY(!IsCapture(position, move)),
+        "Capture in quiet SEE, move: " << move.as_string()
+        << position.DebugString());
+
+    auto toSquare = move.to();
+    lczero::Position newPosition(position, move);
+    toSquare.Mirror();
+    return - EvaluateStaticExchange(newPosition, toSquare);
+}
+
+int EvaluateSEE(
+    const lczero::Position& position,
+    const lczero::Move& move
+) {
+    if (IsCapture(position, move)) {
+        return EvaluateCaptureSEE(position, move);
+    }
+    return EvaluateQuietSEE(position, move);
 }
