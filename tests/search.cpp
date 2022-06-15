@@ -31,7 +31,10 @@ TMoveInfo GetFenBestMove(const std::string& fen, int depth = 1, bool useAllFeatu
         config.EnableNullMove = true;
         config.NullMoveDepthReduction = 3;
         config.NullMoveEvalMargin = 0;
-        config.EnableLMR = false;
+        config.EnableLMR = true;
+        config.LMRMinMoveNumber = 15;
+        config.LMRMinPly = 2;
+        config.LMRMinDepth = 2;
         config.EnableHH = false;
         config.QuiescenceSearchDepth = 10000;
     }

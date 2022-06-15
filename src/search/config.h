@@ -15,6 +15,9 @@ struct TSearchConfig {
     size_t NullMoveDepthReduction = 3;
     size_t NullMoveEvalMargin = 0;
     bool EnableLMR = false;
+    size_t LMRMinMoveNumber = 15;
+    size_t LMRMinPly = 2;
+    size_t LMRMinDepth = 2;
     bool EnableHH = false;
 
     TSearchConfig() = default;

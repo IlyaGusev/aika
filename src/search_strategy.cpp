@@ -19,7 +19,6 @@ TMoveInfo TSearchStrategy::Search(
     const auto& board = position.GetBoard();
     const int depth = node.Depth;
     const size_t ply = node.Ply;
-    const bool isUnderCheck = board.IsUnderCheck();
     ENSURE(depth >= 0, "Incorrect depth for Search");
 
     // TT lookup
@@ -60,11 +59,7 @@ TMoveInfo TSearchStrategy::Search(
 
     // Null move
     if (Config.EnableNullMove) {
-        const size_t reduction = Config.NullMoveDepthReduction;
-        const size_t margin = Config.NullMoveEvalMargin;
-        const auto nullMove = TryNullMove(
-            node, beta, staticScore, reduction, margin
-        );
+        const auto nullMove = TryNullMove(node, beta, staticScore);
         if (nullMove) {
             return *nullMove;
         }
@@ -90,29 +85,20 @@ TMoveInfo TSearchStrategy::Search(
         const bool isCapture = IsCapture(position, ourMove);
         const bool isPromotion = IsPromotion(ourMove);
 
-        int ourScore = 0;
-        bool lmrConditions = true
-            && moveNumber >= 5
-            && ply >= 2
-            && !isCapture
-            && !isPromotion
-            && !isUnderCheck
-            && depth >= 2;
-        if (Config.EnableLMR && lmrConditions) {
-            TSearchNode lmrChild(position, ourMove, depth - 2, ply + 1);
-            ourScore = -Search(lmrChild, -beta, -alpha).Score;
-            node.TreeNodesCount += lmrChild.TreeNodesCount;
-            if(ourScore >= alpha) {
-                TSearchNode child(position, ourMove, depth - 1, ply + 1);
-                ourScore = -Search(child, -beta, -alpha).Score;
-                node.TreeNodesCount += child.TreeNodesCount;
+        std::optional<int> optScore = std::nullopt;
+        if (Config.EnableLMR) {
+            const auto lmrMoveInfo = TryLMR(node, ourMove, alpha, beta, moveNumber);
+            if (lmrMoveInfo) {
+                optScore = lmrMoveInfo->Score;
             }
-        } else {
+        }
+        if (!optScore) {
             TSearchNode child(position, ourMove, depth - 1, ply + 1);
-            ourScore = -Search(child, -beta, -alpha).Score;
+            optScore = -Search(child, -beta, -alpha).Score;
             node.TreeNodesCount += child.TreeNodesCount;
         }
 
+        int ourScore = *optScore;
         TMoveInfo ourMoveInfo(ourMove, ourScore);
         if (Config.EnableAlphaBeta && ourScore >= beta) {
             if (!isCapture && !isPromotion) {
@@ -141,9 +127,7 @@ TMoveInfo TSearchStrategy::Search(
 std::optional<TMoveInfo> TSearchStrategy::TryNullMove(
     const TSearchNode& node,
     int beta,
-    int staticScore,
-    size_t depthReduction,
-    int evalMargin
+    int staticScore
 ) {
     const auto& position = node.Position;
     const auto& board = position.GetBoard();
@@ -152,9 +136,11 @@ std::optional<TMoveInfo> TSearchStrategy::TryNullMove(
     const size_t ply = node.Ply;
     const bool isUnderCheck = board.IsUnderCheck();
 
-    if (!isUnderCheck && depth >= depthReduction + 1 && staticScore >= beta - evalMargin) {
+    const size_t reduction = Config.NullMoveDepthReduction;
+    const int margin = Config.NullMoveEvalMargin;
+    if (!isUnderCheck && depth >= reduction + 1 && staticScore >= beta - margin) {
         const auto& newPosition = lczero::Position(theirBoard, position.GetRule50Ply(), 0);
-        TSearchNode searchNode(newPosition, lczero::Move(), depth - depthReduction - 1, ply + 1);
+        TSearchNode searchNode(newPosition, lczero::Move(), depth - reduction - 1, ply + 1);
         const int score = -Search(searchNode, -beta, -beta + 1).Score;
         node.TreeNodesCount += searchNode.TreeNodesCount;
         if (score >= beta) {
@@ -162,6 +148,43 @@ std::optional<TMoveInfo> TSearchStrategy::TryNullMove(
         }
     }
     return std::nullopt;
+}
+
+std::optional<TMoveInfo> TSearchStrategy::TryLMR(
+    const TSearchNode& node,
+    const lczero::Move& move,
+    int alpha,
+    int beta,
+    size_t moveNumber
+) {
+    const auto& position = node.Position;
+    const auto& board = position.GetBoard();
+    const int depth = node.Depth;
+    const size_t ply = node.Ply;
+    const bool isUnderCheck = board.IsUnderCheck();
+    const bool isCapture = IsCapture(position, move);
+    const bool isPromotion = IsPromotion(move);
+
+    int score = 0;
+    bool lmrConditions = true
+        && moveNumber >= Config.LMRMinMoveNumber
+        && ply >= Config.LMRMinPly
+        && !isCapture
+        && !isPromotion
+        && !isUnderCheck
+        && depth >= Config.LMRMinDepth;
+    if (!lmrConditions) {
+        return std::nullopt;
+    }
+    TSearchNode lmrChild(position, move, depth - 2, ply + 1);
+    score = -Search(lmrChild, -beta, -alpha).Score;
+    node.TreeNodesCount += lmrChild.TreeNodesCount;
+    if (score >= alpha) {
+        TSearchNode child(position, move, depth - 1, ply + 1);
+        score = -Search(child, -beta, -alpha).Score;
+        node.TreeNodesCount += child.TreeNodesCount;
+    }
+    return TMoveInfo{move, score};
 }
 
 TMoveInfo TSearchStrategy::QuiescenceSearch(

@@ -65,9 +65,15 @@ private:
     std::optional<TMoveInfo> TryNullMove(
         const TSearchNode& node,
         int beta,
-        int staticScore,
-        size_t depthReduction,
-        int evalMargin
+        int staticScore
+    );
+
+    std::optional<TMoveInfo> TryLMR(
+        const TSearchNode& node,
+        const lczero::Move& move,
+        int alpha,
+        int beta,
+        size_t moveNumber
     );
 
     TMoveInfo QuiescenceSearch(
