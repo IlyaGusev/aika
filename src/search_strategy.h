@@ -5,6 +5,7 @@
 #include <search/config.h>
 #include <search/history_heuristics.h>
 #include <search/transposition_table.h>
+#include <search/killer_moves.h>
 
 #include <unordered_map>
 #include <string>
@@ -86,4 +87,5 @@ private:
     TTranspositionTable TranspositionTable;
     THistoryHeuristics HistoryHeuristics;
     TSearchConfig Config;
+    TKillerMoves KillerMoves;
 };

@@ -2,7 +2,7 @@
 
 #include <search/see.h>
 
-int TMoveOrdering::CalcMoveOrder(const lczero::Move& move) const {
+int TMoveOrdering::CalcMoveOrder(const lczero::Move& move, size_t ply) const {
     int score = 0;
 
     // Hash move
@@ -20,6 +20,19 @@ int TMoveOrdering::CalcMoveOrder(const lczero::Move& move) const {
     if (IsCapture(Position, move)) {
         int captureValue = EvaluateCaptureSEE(Position, move);
         score += 2000 + captureValue;
+    }
+
+    if (KillerMoves) {
+        const auto& [firstKiller, secondKiller] = KillerMoves->GetMoves(ply);
+        if (firstKiller && *firstKiller == move) {
+            score += 1000;
+        }
+        if (secondKiller && *secondKiller == move) {
+            score += 999;
+        }
+    }
+
+    if (score != 0) {
         return -score;
     }
 

@@ -73,9 +73,10 @@ TMoveInfo TSearchStrategy::Search(
         position,
         prevMove,
         ttMove,
+        Config.EnableKillers ? &KillerMoves : nullptr,
         Config.EnableHH ? &HistoryHeuristics : nullptr
     );
-    const auto& moves = moveOrdering.Order(ourLegalMoves);
+    const auto& moves = moveOrdering.Order(ourLegalMoves, ply);
 
     // Alpha-beta negamax
     size_t moveNumber = 0;
@@ -106,6 +107,7 @@ TMoveInfo TSearchStrategy::Search(
                 EPieceType fromPiece = GetPieceType(board, ourMove.from());
                 HistoryHeuristics.Add(side, fromPiece, ourMove, depth);
                 HistoryHeuristics.AddCounterMove(node.Move, ourMove);
+                KillerMoves.InsertMove(ourMove, ply);
             }
             bestMoveInfo = ourMoveInfo;
             break;
@@ -238,6 +240,7 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
         position,
         prevMove,
         ttMove,
+        Config.EnableKillers ? &KillerMoves : nullptr,
         Config.EnableHH ? &HistoryHeuristics : nullptr
     );
     std::vector<lczero::Move> filteredMoves;
@@ -251,7 +254,7 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
         return {staticScore};
     }
 
-    const auto& moves = moveOrdering.Order(filteredMoves);
+    const auto& moves = moveOrdering.Order(filteredMoves, ply);
 
     TMoveInfo bestMoveInfo(MIN_SCORE_VALUE - 1);
     for (const auto& move : moves) {

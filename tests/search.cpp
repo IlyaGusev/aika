@@ -15,6 +15,8 @@
 
 #include <iostream>
 
+constexpr size_t MAX_DEPTH = 8;
+
 TMoveInfo GetFenBestMove(const std::string& fen, int depth = 1, bool useAllFeatures = false) {
     lczero::ChessBoard board(fen);
     lczero::PositionHistory history;
@@ -36,6 +38,7 @@ TMoveInfo GetFenBestMove(const std::string& fen, int depth = 1, bool useAllFeatu
         config.LMRMinPly = 2;
         config.LMRMinDepth = 2;
         config.EnableHH = false;
+        config.EnableKillers = true;
         config.QuiescenceSearchDepth = 10000;
     }
     TSearchStrategy strategy(config);
@@ -110,7 +113,7 @@ BOOST_AUTO_TEST_CASE( time_benchmark )
     const std::string fen = "r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -";
     const std::string move = "f4f5";
 
-    auto bestMove = GetFenBestMove(fen, 7, true);
+    auto bestMove = GetFenBestMove(fen, MAX_DEPTH, true);
 
     BOOST_WARN_MESSAGE(bestMove.TimeMs < 1000, "" << bestMove.TimeMs << " ms, " << bestMove.NodesCount << " nodes");
     BOOST_WARN_EQUAL(bestMove.Move.as_string(), move);
@@ -121,7 +124,7 @@ BOOST_AUTO_TEST_CASE( deterministic_benchmark )
     const std::string fen = "r1b1r1k1/1pqn1pbp/p2pp1p1/P7/1n1NPP1Q/2NBBR2/1PP3PP/R6K w - -";
     const std::string move = "f4f5";
 
-    auto bestMove = GetFenBestMove(fen, 7, true);
+    auto bestMove = GetFenBestMove(fen, MAX_DEPTH, true);
     size_t nodesCount = bestMove.NodesCount;
     BOOST_TEST_MESSAGE("Determinisitc benchmark: " << nodesCount << " nodes");
 }
@@ -157,7 +160,7 @@ BOOST_AUTO_TEST_CASE( custom_epd )
     BOOST_TEST_MESSAGE("Custom suite: " << records.size() << " records");
     for (const auto& record : records) {
         BOOST_TEST_MESSAGE("Running " << record.ID);
-        for (size_t depth = 5; depth <= 7; depth++) {
+        for (size_t depth = 5; depth <= MAX_DEPTH - 1; depth++) {
             auto prediction = GetFenBestMove(record.FEN, depth, true);
             if (!record.BestMoves.empty()) {
                 BOOST_CHECK_MESSAGE(
@@ -188,7 +191,7 @@ BOOST_AUTO_TEST_CASE( bratko_kopec )
     size_t passedCount = 0;
     for (const auto& record : records) {
         BOOST_TEST_MESSAGE("Running " << record.ID);
-        auto prediction = GetFenBestMove(record.FEN, 6, true).Move;
+        auto prediction = GetFenBestMove(record.FEN, MAX_DEPTH - 1, true).Move;
         if (prediction == record.BestMoves[0]) {
             passedCount += 1;
         }

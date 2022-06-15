@@ -18,6 +18,7 @@ struct TSearchConfig {
     size_t LMRMinMoveNumber = 15;
     size_t LMRMinPly = 2;
     size_t LMRMinDepth = 2;
+    bool EnableKillers = false;
     bool EnableHH = false;
 
     TSearchConfig() = default;
