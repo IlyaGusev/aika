@@ -59,15 +59,14 @@ TMoveInfo TSearchStrategy::Search(
     }
 
     // Null move
-    const size_t R = Config.NullMoveDepthReduction;
-    if (Config.EnableNullMove && !isUnderCheck && depth >= R + 1 && staticScore >= beta) {
-        const auto& newPosition = lczero::Position(theirBoard, position.GetRule50Ply(), 0);
-        TSearchNode searchNode(newPosition, lczero::Move(), depth - R - 1, ply + 1);
-        const auto& bestEnemyMove = Search(searchNode, -beta, -beta + 1);
-        node.TreeNodesCount += searchNode.TreeNodesCount;
-        const int score = -bestEnemyMove.Score;
-        if (score >= beta) {
-            return {lczero::Move(), score};
+    if (Config.EnableNullMove) {
+        const size_t reduction = Config.NullMoveDepthReduction;
+        const size_t margin = Config.NullMoveEvalMargin;
+        const auto nullMove = TryNullMove(
+            node, beta, staticScore, reduction, margin
+        );
+        if (nullMove) {
+            return *nullMove;
         }
     }
 
@@ -137,6 +136,32 @@ TMoveInfo TSearchStrategy::Search(
         TranspositionTable.Insert(position, bestMoveInfo, depth, alphaOrig, beta);
     }
     return bestMoveInfo;
+}
+
+std::optional<TMoveInfo> TSearchStrategy::TryNullMove(
+    const TSearchNode& node,
+    int beta,
+    int staticScore,
+    size_t depthReduction,
+    int evalMargin
+) {
+    const auto& position = node.Position;
+    const auto& board = position.GetBoard();
+    const auto& theirBoard = position.GetThemBoard();
+    const int depth = node.Depth;
+    const size_t ply = node.Ply;
+    const bool isUnderCheck = board.IsUnderCheck();
+
+    if (!isUnderCheck && depth >= depthReduction + 1 && staticScore >= beta - evalMargin) {
+        const auto& newPosition = lczero::Position(theirBoard, position.GetRule50Ply(), 0);
+        TSearchNode searchNode(newPosition, lczero::Move(), depth - depthReduction - 1, ply + 1);
+        const int score = -Search(searchNode, -beta, -beta + 1).Score;
+        node.TreeNodesCount += searchNode.TreeNodesCount;
+        if (score >= beta) {
+            return TMoveInfo{lczero::Move(), beta};
+        }
+    }
+    return std::nullopt;
 }
 
 TMoveInfo TSearchStrategy::QuiescenceSearch(

@@ -62,6 +62,14 @@ private:
         int beta
     );
 
+    std::optional<TMoveInfo> TryNullMove(
+        const TSearchNode& node,
+        int beta,
+        int staticScore,
+        size_t depthReduction,
+        int evalMargin
+    );
+
     TMoveInfo QuiescenceSearch(
         const TSearchNode& node,
         int alpha,

@@ -28,7 +28,9 @@ TMoveInfo GetFenBestMove(const std::string& fen, int depth = 1, bool useAllFeatu
     if (useAllFeatures) {
         config.EnableTT = true;
         config.EnablePST = true;
-        config.EnableNullMove = false;
+        config.EnableNullMove = true;
+        config.NullMoveDepthReduction = 3;
+        config.NullMoveEvalMargin = 0;
         config.EnableLMR = false;
         config.EnableHH = false;
         config.QuiescenceSearchDepth = 10000;

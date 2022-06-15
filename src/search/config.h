@@ -12,7 +12,8 @@ struct TSearchConfig {
     bool EnablePST = false;
     bool EnableTT = false;
     bool EnableNullMove = false;
-    bool NullMoveDepthReduction = 3;
+    size_t NullMoveDepthReduction = 3;
+    size_t NullMoveEvalMargin = 0;
     bool EnableLMR = false;
     bool EnableHH = false;
 
