@@ -2,6 +2,33 @@
 
 #include <search/see.h>
 
+
+std::vector<TMoveInfo> TMoveOrdering::Order(
+    const lczero::MoveList& moves,
+    size_t ply,
+    bool printScores /* = false */
+) const {
+    std::vector<TMoveInfo> movesScores;
+    movesScores.reserve(moves.size());
+    for (const lczero::Move& move : moves) {
+        movesScores.emplace_back(move, CalcMoveOrder(move, ply));
+    }
+    std::stable_sort(movesScores.begin(), movesScores.end(),
+        [](const TMoveInfo & a, const TMoveInfo& b) -> bool {
+            if (a.Score < b.Score) return true;
+            if (a.Score > b.Score) return false;
+            return (a.Move.as_packed_int() < b.Move.as_packed_int());
+        }
+    );
+    if (printScores) {
+        for (const auto& move : movesScores) {
+            std::cerr << move.Score << " ";
+        }
+        std::cerr << std::endl;
+    }
+    return movesScores;
+}
+
 int TMoveOrdering::CalcMoveOrder(const lczero::Move& move, size_t ply) const {
     int score = 0;
 
@@ -44,7 +71,6 @@ int TMoveOrdering::CalcMoveOrder(const lczero::Move& move, size_t ply) const {
         if (historyScore != 0) {
             score += 500 + historyScore;
         }
-
         auto counterMove = HistoryHeuristics->GetCounterMove(PrevMove);
         if (move == counterMove) {
             score += 100;

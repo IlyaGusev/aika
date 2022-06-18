@@ -99,7 +99,7 @@ TMoveInfo TSearchStrategy::Search(
             node.TreeNodesCount += child.TreeNodesCount;
         }
 
-        int ourScore = *optScore;
+        const int ourScore = *optScore;
         TMoveInfo ourMoveInfo(ourMove, ourScore);
         if (Config.EnableAlphaBeta && ourScore >= beta) {
             if (!isCapture && !isPromotion) {
@@ -310,5 +310,6 @@ std::optional<TMoveInfo> TSearchStrategy::MakeMove(
         }
         currentDepth += 1;
     }
+    PRINT_DEBUG(TranspositionTable.GetStats());
     return move;
 }

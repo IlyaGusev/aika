@@ -32,25 +32,11 @@ public:
         , HistoryHeuristics(historyHeuristics)
     {}
 
-    std::vector<TMoveInfo> Order(const lczero::MoveList& moves, size_t ply) const {
-        std::vector<TMoveInfo> movesScores;
-        movesScores.reserve(moves.size());
-        for (const lczero::Move& move : moves) {
-            movesScores.emplace_back(move, CalcMoveOrder(move, ply));
-        }
-        std::stable_sort(movesScores.begin(), movesScores.end(),
-            [](const TMoveInfo & a, const TMoveInfo& b) -> bool {
-                if (a.Score < b.Score) return true;
-                if (a.Score > b.Score) return false;
-                return (a.Move.as_packed_int() < b.Move.as_packed_int());
-            }
-        );
-        /*for (const auto& move : movesScores) {
-            std::cerr << move.Score << " ";
-        }
-        std::cerr << std::endl;*/
-        return movesScores;
-    }
+    std::vector<TMoveInfo> Order(
+        const lczero::MoveList& moves,
+        size_t ply,
+        bool printScores = false
+    ) const;
 
 private:
     int CalcMoveOrder(const lczero::Move& move, size_t ply) const;

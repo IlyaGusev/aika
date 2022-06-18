@@ -8,10 +8,11 @@
 class TTranspositionTable {
 public:
     enum class ENodeType : short {
-        Unknown,
-        PV,
+        Unknown = -1,
+        PV = 0,
         Cut,
-        All
+        All,
+        Count
     };
 
     struct TNode {
@@ -43,16 +44,11 @@ public:
 
 private:
     boost::unordered_map<lczero::Position, TNode, TPositionHasher, TPositionEqualFn> Data;
+    boost::unordered_map<ENodeType, size_t> InsertCounts;
+    mutable boost::unordered_map<ENodeType, size_t> FindCounts;
 
 public:
     TTranspositionTable() {}
-
-    void Insert(
-        const lczero::Position& position,
-        const TMoveInfo& move,
-        int depth,
-        ENodeType type
-    );
 
     void Insert(
         const lczero::Position& position,
@@ -66,4 +62,16 @@ public:
         const lczero::Position& position,
         int depth = 0
     ) const;
+
+    std::string GetStats() const;
+
+private:
+    void Insert(
+        const lczero::Position& position,
+        const TMoveInfo& move,
+        int depth,
+        ENodeType type
+    );
+
+    const char* ToString(ENodeType type) const;
 };
