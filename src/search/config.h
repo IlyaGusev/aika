@@ -18,8 +18,11 @@ struct TSearchConfig {
     size_t LMRMinMoveNumber = 15;
     size_t LMRMinPly = 2;
     size_t LMRMinDepth = 2;
+    size_t LMRReduction = 1;
     bool EnableKillers = false;
     bool EnableHH = false;
+    bool EnableSEESkip = false;
+    int SEESkipQuietMargin = 0;
 
     TSearchConfig() = default;
     explicit TSearchConfig(const std::string& configFile) {

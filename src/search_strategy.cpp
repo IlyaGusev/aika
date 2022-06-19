@@ -85,6 +85,15 @@ TMoveInfo TSearchStrategy::Search(
         const auto& ourMove = moveInfo.Move;
         const bool isCapture = IsCapture(position, ourMove);
         const bool isPromotion = IsPromotion(ourMove);
+        const bool isUnderCheck = board.IsUnderCheck();
+        const bool isGivingCheck = lczero::Position(position, ourMove).GetBoard().IsUnderCheck();
+
+        if (Config.EnableSEESkip && !isUnderCheck && !isCapture && !isPromotion && !isGivingCheck) {
+            const int margin = Config.SEESkipQuietMargin;
+            if (EvaluateSEE(position, ourMove) < margin) {
+                continue;
+            }
+        }
 
         std::optional<int> optScore = std::nullopt;
         if (Config.EnableLMR) {
@@ -178,7 +187,8 @@ std::optional<TMoveInfo> TSearchStrategy::TryLMR(
     if (!lmrConditions) {
         return std::nullopt;
     }
-    TSearchNode lmrChild(position, move, depth - 2, ply + 1);
+    const int reduction = Config.LMRReduction;
+    TSearchNode lmrChild(position, move, depth - 1 - reduction, ply + 1);
     score = -Search(lmrChild, -beta, -alpha).Score;
     node.TreeNodesCount += lmrChild.TreeNodesCount;
     if (score >= alpha) {
