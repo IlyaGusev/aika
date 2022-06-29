@@ -33,6 +33,7 @@
 #include <cctype>
 #include <cerrno>
 #include <fstream>
+#include <sstream>
 
 #include "chess/bitboard.h"
 #include "chess/board.h"
@@ -227,6 +228,18 @@ public:
         gzclose(file);
     }
 
+    const PositionHistory& ParsePgnText(const std::string& text) {
+        Flush();
+        std::istringstream stream(text);
+        std::string line;
+        bool in_comment = false;
+        bool started = false;
+        while (std::getline(stream, line)) {
+            ParseLine(line, started, in_comment);
+        }
+        return History;
+    }
+
     void ParseLine(std::string& line, bool& started, bool& in_comment) {
         if (!line.empty() && line.back() == '\r') { line.pop_back(); }
         if (line.empty() || line[0] == '[') {
@@ -241,8 +254,11 @@ public:
             );
             if (uc_line.find("[FEN \"", 0) == 0) {
                 auto start_trimmed = line.substr(6);
-                cur_startpos_ = start_trimmed.substr(0, start_trimmed.find('"'));
-                cur_board_.SetFromFen(cur_startpos_);
+                StartPos = start_trimmed.substr(0, start_trimmed.find('"'));
+                int rule50_ply = 0;
+                int move = 0;
+                Board.SetFromFen(StartPos, &rule50_ply, &move);
+                History.Reset(Board, rule50_ply, move);
             }
             return;
         }
@@ -289,76 +305,46 @@ public:
                 }
             }
             // Pure move numbers can be skipped.
-            if (word.size() < 2) continue;
-            // Ignore score line.
-            if (word == "1/2-1/2" || word == "1-0" || word == "0-1" || word == "*")
+            if (word.size() < 2) {
                 continue;
-            cur_game_.push_back(SanToMove(word, cur_board_));
-            cur_board_.ApplyMove(cur_game_.back());
+            }
+            // Ignore score line.
+            if (word == "1/2-1/2" || word == "1-0" || word == "0-1" || word == "*") {
+                continue;
+            }
+            auto move = SanToMove(word, Board);
+            Moves.push_back(move);
+            Board.ApplyMove(move);
+            History.Append(move);
             // Board ApplyMove wants mirrored for black, but outside code wants
             // normal, so mirror it back again.
             // Check equal to 0 since we've already added the position.
-            if ((cur_game_.size() % 2) == 0) {
-                cur_game_.back().Mirror();
+            if ((Moves.size() % 2) == 0) {
+                Moves.back().Mirror();
             }
-            cur_board_.Mirror();
+            Board.Mirror();
         }
     }
 
-    lczero::PositionHistory ParseLineSimple(const std::string& line) {
-        lczero::PositionHistory history;
-        lczero::ChessBoard startBoard{lczero::ChessBoard::kStartposFen};
-        history.Reset(startBoard, 0, 0);
-        lczero::ChessBoard currentBoard{ChessBoard::kStartposFen};
+    std::vector<Opening> GetGames() const { return Games; }
+    std::vector<Opening>&& ReleaseGames() { return std::move(Games); }
 
-        std::istringstream iss(line);
-        std::string word;
-        while (!iss.eof()) {
-            word.clear();
-            iss >> word;
-            if (word.size() < 2) continue;
-            // Trim move numbers from front.
-            const auto idx = word.find('.');
-            if (idx != std::string::npos) {
-                bool all_nums = true;
-                for (size_t i = 0; i < idx; i++) {
-                    if (word[i] < '0' || word[i] > '9') {
-                        all_nums = false;
-                        break;
-                    }
-                }
-                if (all_nums) {
-                    word = word.substr(idx + 1);
-                }
-            }
-            // Pure move numbers can be skipped.
-            if (word.size() < 2) continue;
-            // Ignore score line.
-            if (word == "1/2-1/2" || word == "1-0" || word == "0-1" || word == "*")
-                continue;
-            auto move = SanToMove(word, currentBoard);
-            currentBoard.ApplyMove(move);
-            currentBoard.Mirror();
-            history.Append(move);
-        }
-        return history;
-    }
+    const PositionHistory& GetHistory() const { return History; }
 
-    std::vector<Opening> GetGames() const { return games_; }
-    std::vector<Opening>&& ReleaseGames() { return std::move(games_); }
-
- private:
+private:
     void Flush() {
-        games_.push_back({cur_startpos_, cur_game_});
-        cur_game_.clear();
-        cur_board_.SetFromFen(ChessBoard::kStartposFen);
-        cur_startpos_ = ChessBoard::kStartposFen;
+        Games.push_back({StartPos, Moves});
+        Moves.clear();
+        Board.SetFromFen(ChessBoard::kStartposFen);
+        History.Reset(Board, 0, 0);
+        StartPos = ChessBoard::kStartposFen;
     }
 
-  ChessBoard cur_board_{ChessBoard::kStartposFen};
-  MoveList cur_game_;
-  std::string cur_startpos_ = ChessBoard::kStartposFen;
-  std::vector<Opening> games_;
+    ChessBoard Board{ChessBoard::kStartposFen};
+    MoveList Moves;
+    PositionHistory History;
+    std::string StartPos = ChessBoard::kStartposFen;
+    std::vector<Opening> Games;
 };
 
 }  // namespace lczero

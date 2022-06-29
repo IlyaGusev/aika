@@ -12,7 +12,7 @@
 
 lczero::PositionHistory ReadPGN(const std::string& pgn) {
     lczero::PgnReader reader;
-    lczero::PositionHistory history = reader.ParseLineSimple(pgn);
+    lczero::PositionHistory history = reader.ParsePgnText(pgn);
     return history;
 }
 
@@ -24,7 +24,6 @@ void TController::MakeMove(
 
     std::string pgn = req->getParameter("pgn");
     PRINT_DEBUG("PGN: " << pgn);
-    LOG_INFO << "PGN: " << pgn;
 
     const auto& history = ReadPGN(pgn);
     PRINT_DEBUG("Chess board: ");
