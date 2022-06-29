@@ -312,6 +312,11 @@ public:
             if (word == "1/2-1/2" || word == "1-0" || word == "0-1" || word == "*") {
                 continue;
             }
+
+            // Ignore resuming white move
+            if (word == "..") {
+                continue;
+            }
             auto move = SanToMove(word, Board);
             Moves.push_back(move);
             Board.ApplyMove(move);
