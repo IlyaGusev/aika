@@ -65,6 +65,8 @@ public:
 
     std::string GetStats() const;
 
+    void Clear();
+
 private:
     void Insert(
         const lczero::Position& position,

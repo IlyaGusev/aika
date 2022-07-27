@@ -37,6 +37,13 @@ struct TSearchNode {
     {}
 };
 
+struct TBetaCutoffStats {
+    std::unordered_map<size_t, size_t> PositionsCounts;
+
+    void Increment(size_t position) { PositionsCounts[position] += 1; }
+    std::string GetStats() const;
+};
+
 
 class TSearchStrategy : public IStrategy {
 public:
@@ -88,4 +95,5 @@ private:
     THistoryHeuristics HistoryHeuristics;
     TSearchConfig Config;
     TKillerMoves KillerMoves;
+    TBetaCutoffStats BetaCutoffStats;
 };

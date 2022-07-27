@@ -119,6 +119,7 @@ TMoveInfo TSearchStrategy::Search(
                 KillerMoves.InsertMove(ourMove, ply);
             }
             bestMoveInfo = ourMoveInfo;
+            BetaCutoffStats.Increment(moveNumber);
             break;
         }
         if (ourMoveInfo > bestMoveInfo) {
@@ -321,5 +322,30 @@ std::optional<TMoveInfo> TSearchStrategy::MakeMove(
         currentDepth += 1;
     }
     PRINT_DEBUG(TranspositionTable.GetStats());
+    PRINT_DEBUG(BetaCutoffStats.GetStats());
     return move;
 }
+
+std::string TBetaCutoffStats::GetStats() const {
+    std::stringstream stats;
+    size_t maxPos = 0;
+    for (const auto& [position, cnt] : PositionsCounts) {
+        maxPos = std::max(position, maxPos);
+    }
+    size_t clippedMaxPos = std::min(maxPos, 20UL);
+    stats << "Beta cutoffs:" << std::endl;
+    for (size_t i = 0; i < clippedMaxPos; i++) {
+        if (PositionsCounts.find(i) != PositionsCounts.end()) {
+            stats << "\t" << i << " position: " << PositionsCounts.at(i) << std::endl;
+        }
+    }
+    size_t tailSum = 0;
+    for (size_t i = clippedMaxPos; i < maxPos; i++){
+        if (PositionsCounts.find(i) != PositionsCounts.end()) {
+            tailSum += PositionsCounts.at(i);
+        }
+    }
+    stats << "\t" << clippedMaxPos << "+ positions: " << tailSum << std::endl;
+    return stats.str();
+}
+

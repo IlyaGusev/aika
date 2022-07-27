@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE( position_opening )
     }
 }
 
-BOOST_AUTO_TEST_CASE( position_endgame)
+BOOST_AUTO_TEST_CASE( position_endgame )
 {
     std::vector<std::pair<std::string, int>> cases{{
         {"4k3/8/4K3/4P3/8/8/8/8 w - - 0 1", -2 + 20 - (-28) + 94},

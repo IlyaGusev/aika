@@ -72,3 +72,8 @@ const char* TTranspositionTable::ToString(ENodeType type) const {
     return "Unknown";
 }
 
+void TTranspositionTable::Clear() {
+    Data.clear();
+    InsertCounts.clear();
+    FindCounts.clear();
+}

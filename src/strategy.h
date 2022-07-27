@@ -41,6 +41,7 @@ public:
     ) = 0;
 
     virtual const char* GetName() const = 0;
+    virtual ~IStrategy() {}
 };
 
 using TStrategies = std::vector<std::unique_ptr<IStrategy>>;

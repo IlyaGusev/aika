@@ -22,7 +22,7 @@ std::vector<TMoveInfo> TMoveOrdering::Order(
     );
     if (printScores) {
         for (const auto& move : movesScores) {
-            std::cerr << move.Score << " ";
+            std::cerr << move.Move.as_string() << "(" << move.Score << ") ";
         }
         std::cerr << std::endl;
     }
