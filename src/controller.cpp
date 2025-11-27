@@ -24,6 +24,7 @@ void TController::MakeMove(
 
     std::string pgn = req->getParameter("pgn");
     PRINT_DEBUG("PGN: " << pgn);
+    LOG_INFO << "PGN: " << pgn;
 
     const auto& history = ReadPGN(pgn);
     PRINT_DEBUG("Chess board: ");
@@ -66,7 +67,7 @@ void TController::MakeMove(
 
     std::string moveString = bestMove->Move.as_string();
     PRINT_DEBUG("Best move: " << moveString << std::endl);
-    LOG_INFO << "Move: " << moveString;
+    LOG_INFO << "Best move: " << moveString;
 
     response["score"] = bestMove->Score;
     response["best_move"] = moveString;

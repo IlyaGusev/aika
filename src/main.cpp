@@ -39,8 +39,10 @@ int main(int argc, char** argv) {
     uint32_t port = vm["port"].as<uint32_t>();
 
     drogon::app()
-        .setLogPath("./")
+        .setLogPath("")
         .setLogLevel(trantor::Logger::kInfo)
+        .enableServerHeader(false)
+        .enableDateHeader(true)
         .addListener(host, port)
         .setThreadNum(6)
         .setMaxConnectionNum(256)
