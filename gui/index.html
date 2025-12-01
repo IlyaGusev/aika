@@ -1,6 +1,7 @@
 <html>
   <head>
     <title>Aika chess engine</title>
+    <base href="/aika/">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
     <meta charset="utf-8">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -9,17 +10,39 @@
     <meta property="og:locale" content="en_XX" />
 
     <!-- JQuery -->
-    <script src="/static/js/jquery-3.3.1.min.js"></script>
+    <script src="./static/js/jquery-3.3.1.min.js"></script>
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
-    <script src="/static/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="./static/css/bootstrap.min.css">
+    <script src="./static/js/bootstrap.min.js"></script>
 
     <!-- Static files -->
-    <link rel="shortcut icon" href="/static/favicon.ico">
-    <link rel="stylesheet" href="/static/css/chessboard-1.0.0.min.css">
-    <script src="/static/js/chess.js"></script>
-    <script src="/static/js/chessboard-1.0.0.min.js"></script>
+    <link rel="shortcut icon" href="./static/favicon.ico">
+    <link rel="stylesheet" href="./static/css/chessboard-1.0.0.min.css">
+    <script src="./static/js/chess.js"></script>
+    <script src="./static/js/chessboard-1.0.0.min.js"></script>
+    <style>
+      html, body {
+        overflow-x: hidden;
+        max-width: 100%;
+      }
+      #pgn {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+      }
+      .btn:focus,
+      .btn:active,
+      .btn:active:focus {
+        outline: none !important;
+        box-shadow: none !important;
+      }
+      .button-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    </style>
   </head>
   <body>
     <div class="col">
@@ -28,9 +51,9 @@
           <div class="card mt-2">
             <div class="card-body">
               <div class="row">
-                <div class="col-5">
-                  <div id="chess_board" class="mx-auto mb-2" style="width: 400px;"></div>
-                  <div class="row mx-auto mb-2" style="width: 400px;">
+                <div class="col-12 col-lg-5">
+                  <div id="chess_board" class="mx-auto mb-2" style="max-width: 400px; width: 100%;"></div>
+                  <div class="mx-auto mb-2" style="max-width: 400px;">
                     <strong class="mx-auto mb-2"><div id="status"></div></strong>
                     <div class="input-group mb-3">
                       <input id="fen" type="text" class="form-control">
@@ -38,48 +61,47 @@
                         <button id="set_fen" class="btn btn-outline-success">Set FEN</button>
                       </div>
                     </div>
-                    <!-- -buttons -->
-                    <div class="btn-group">
-                      <button id="new_game" class="btn btn-outline-secondary">New game</button>
-                      <button id="make_move" class="btn btn-outline-secondary">Make move</button>
-                      <button id="take_back" class="btn btn-outline-secondary">Take back</button>
-                      <button id="flip_board" class="btn btn-outline-secondary">Flip board</button>
+                    <div class="button-container">
+                      <button id="new_game" class="btn btn-outline-secondary flex-fill">New game</button>
+                      <button id="make_move" class="btn btn-outline-secondary flex-fill">Make move</button>
+                      <button id="take_back" class="btn btn-outline-secondary flex-fill">Take back</button>
+                    </div>
+                    <div class="button-container mt-2">
+                      <button id="flip_board" class="btn btn-outline-secondary w-100">Flip board</button>
                     </div>
                   </div>
                 </div>
-                <div class="col ml-4">
+                <div class="col-12 col-lg ml-lg-4">
                   <hr>
                   <!-- game info -->
-                  <table class="table text-center mt-4">
-                    <thead>
-                      <tr>
-                        <th>Strategy</th>
-                        <th>Score</th>
-                        <th>Depth</th>
-                        <th>Time</th>
-                        <th>Nodes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td id="strategy"></td>
-                        <td><strong id="score" class="text-danger"></strong></td>
-                        <td id="depth"></td>
-                        <td id="time"></td>
-                        <td id="nodes"></td>
-                      <tr>
-                    </tbody>
-                  </table>
+                  <div class="table-responsive">
+                    <table class="table text-center mt-4">
+                      <thead>
+                        <tr>
+                          <th>Strategy</th>
+                          <th>Score</th>
+                          <th>Depth</th>
+                          <th>Time</th>
+                          <th>Nodes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td id="strategy"></td>
+                          <td><strong id="score" class="text-danger"></strong></td>
+                          <td id="depth"></td>
+                          <td id="time"></td>
+                          <td id="nodes"></td>
+                        <tr>
+                      </tbody>
+                    </table>
+                  </div>
 
                   <hr>
-                  <!-- PGN output -->
                   <div class="mt-2"><strong>PGN:</strong></div>
                   <div id="pgn"></div>
 
-                  <!-- download button -->
                   <button id="download_button" class="btn btn-success mt-2">Download</button>
-
-                  <!-- download link -->
                   <a id="download_link" href="" download="" hidden>your pgn</a>
                 </div>
               </div>
@@ -104,138 +126,94 @@
 </html>
 
 <script>
-  // make computer move
   function make_move() {
-    // disable take back button
     $('#take_back').attr('disabled', true);
-    // make HTTP POST request to make move API
-    $.post('/make_move',{
+    $.post('/aika/make_move',{
         'pgn': game.pgn(),
         'fixed_depth': $('#fixed_depth option:selected').val(),
         'move_time': $('#move_time option:selected').val()
       }, function(data) {
-        // load fen into the current board state
         game.move(data.best_move, { sloppy: true })
-        // update board position
         board.position(game.fen());
 
-        // update game info
         $score.text(data.score);
         $depth.text(data.depth);
         $time.text(data.time);
         $nodes.text(data.nodes);
         $strategy.text(data.strategy);
 
-        // update game status
         updateStatus();
-        // re-enable take back button
         $('#take_back').attr('disabled', false);
     });
   }
 
-  // handle new game button click
   $('#new_game').on('click', function() {
-    // reset board state
     game.reset();
-    // set initial board position
     board.position('start');
+    $(this).blur();
   });
-  // handle make move button click
+
   $('#make_move').on('click', function() {
-    // make computer move
     make_move();
+    $(this).blur();
   });
-  // handle take back button click
+
   $('#take_back').on('click', function() {
-    // take move back
     game.undo();
     game.undo();
-    // update board position
     board.position(game.fen());
-    // update game status
     updateStatus();
+    $(this).blur();
   });
-  // handle flip board button click
+
   $('#flip_board').on('click', function() {
-    // flip board
     board.flip();
+    $(this).blur();
   });
-  
-  // handle select move time option
+
   $('#move_time').on('change', function() {
-    // disable fixed depth
     $('#fixed_depth').val('0');
   });
-  
-  // handle select fixed depth option
+
   $('#fixed_depth').on('change', function() {
-    // disable fixed depth
     $('#move_time').val('0');
   });
-  
-  // handle set FEN button click
+
   $('#set_fen').on('click', function() {
-    // set user FEN
-    
-    // FEN parsed
-    if (game.load($('#fen').val()))
-      // set board position
+    if (game.load($('#fen').val())) {
       board.position(game.fen());
-    
-    // FEN is not parsed
-    else
+    } else {
       alert('Illegal FEN!');
+    }
+    $(this).blur();
   });
-  
-  // handle download button click
+
   $('#download_button').on('click', function() {
-    // init date
     var date = new Date();
-    
-    // PGN header
     var pgn_header = '';
-    
-    // get user name
     var user_name = prompt('What is your name?');
-    
-    // get user color
     var user_color = prompt('What color did you play with? (please type "White" or "Black")');
-    
-    // if user color is white
-    if (user_color == 'White')
-    {
-      // init PGN header
+
+    if (user_color == 'White') {
       pgn_header = '[White "' + user_name + '"]\n[Black "Aika 0.1"]\n\n';
-      
-      // init PGN filename
       $('#download_link').attr('download', user_name + '_vs_Aika_' + date.toString().replace(/\s/g, "_") + '.pgn');
-    }
-    // if user color is black
-    else if (user_color == 'Black')
-    {
-      // init PGN header
+    } else if (user_color == 'Black') {
       pgn_header = '[White "Aika 0.1"]\n[Black "' + user_name + '"]\n\n';
-      
-      // init PGN filename
       $('#download_link').attr('download', 'Aika_vs_' + user_name + '_' + date.toString().replace(/\s/g, "_") + '.pgn');
-    }
-    // otherwise it's error
-    else
-    {
+    } else {
       alert('Color is illegal, please type "White" or "Black"');
-      return; 
+      $(this).blur();
+      return;
     }
-    
-    // init download link
+
     $('#download_link').attr('href', window.URL.createObjectURL(
       new Blob([pgn_header + game.pgn()], {type: 'text'})
     ));
-    
-    // mimic download link click
+
     $('#download_link')[0].click();
+    $(this).blur();
   });
 
-  // GUI board & game state variables
   var board = null;
   var game = new Chess();
   var $status = $('#status');
@@ -247,79 +225,55 @@
   var $nodes = $('#nodes');
   var $strategy = $('#strategy');
 
-  // on picking up a piece
   function onDragStart (source, piece, position, orientation) {
-    // do not pick up pieces if the game is over
     if (game.game_over()) return false
 
-    // only pick up pieces for the side to move
     if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
         (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
       return false
     }
   }
 
-  // on dropping piece
   function onDrop (source, target) {
-    // see if the move is legal
     var move = game.move({
       from: source,
       to: target,
       promotion: 'q' // NOTE: always promote to a queen for example simplicity
     })
 
-    // illegal move
     if (move === null) return 'snapback'
 
-    // make computer move
     make_move();
-    
-    // update game status
     updateStatus();
   }
 
-  // update the board position after the piece snap
-  // for castling, en passant, pawn promotion
   function onSnapEnd () {
     board.position(game.fen())
   }
 
-  // update game status
   function updateStatus () {
     var status = ''
-
     var moveColor = 'White'
     if (game.turn() === 'b') {
       moveColor = 'Black'
     }
 
-    // checkmate?
     if (game.in_checkmate()) {
       status = 'Game over, ' + moveColor + ' is in checkmate.'
-    }
-
-    // draw?
-    else if (game.in_draw()) {
+    } else if (game.in_draw()) {
       status = 'Game over, drawn position'
-    }
-
-    // game still on
-    else {
+    } else {
       status = moveColor + ' to move'
-
-      // check?
       if (game.in_check()) {
         status += ', ' + moveColor + ' is in check'
       }
     }
 
-    // update DOM elements
     $status.html(status)
     $fen.val(game.fen())
     $pgn.html(game.pgn())
   }
 
-  // chess board configuration
   var config = {
     draggable: true,
     position: 'start',
@@ -327,13 +281,12 @@
     onDrop: onDrop,
     onSnapEnd: onSnapEnd
   }
-  // create chess board widget instance
+
   board = Chessboard('chess_board', config)
-  // prevent scrolling on touch devices
+
   $('#chess_board').on('scroll touchmove touchend touchstart contextmenu', function(e) {
     e.preventDefault();
   });
 
-  // update game status
   updateStatus();
 </script>

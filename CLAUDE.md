@@ -141,10 +141,14 @@ Each test file compiles to a standalone executable using Boost.Test.
 ## Code Style
 
 **Comments:**
-- Avoid overly verbose code comments
-- Only add comments when explaining complex algorithms or non-obvious logic
+- Do NOT add obvious comments that restate what the code does
+- Only add comments when explaining WHY (design decisions, workarounds) or complex HOW (algorithms)
 - Prefer self-documenting code with clear variable and function names
-- Don't comment what the code obviously does
+- Examples of obvious comments to avoid:
+  - `// set the value` before `value = 5`
+  - `// call the function` before `doSomething()`
+  - `// loop through items` before `for (item in items)`
+  - `// return the result` before `return result`
 
 ## Common Development Patterns
 
