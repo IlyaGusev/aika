@@ -34,4 +34,4 @@ cd build
 ```
 
 * Link (after running): http://127.0.0.1:8000/index.html
-* Demo: http://yallen.ru/aika/
+* Demo: http://ilyagusev.dev/aika/
