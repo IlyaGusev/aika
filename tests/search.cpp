@@ -165,8 +165,12 @@ BOOST_AUTO_TEST_CASE( custom_epd )
         for (size_t depth = 5; depth <= MAX_DEPTH - 1; depth++) {
             auto prediction = GetFenBestMove(record.FEN, depth, true);
             if (!record.BestMoves.empty()) {
+                // EPD bm lists all acceptable best moves
+                const bool found = std::find(
+                    record.BestMoves.begin(), record.BestMoves.end(),
+                    prediction.Move) != record.BestMoves.end();
                 BOOST_CHECK_MESSAGE(
-                    prediction.Move == record.BestMoves[0],
+                    found,
                     record.ID << ": " << record.FEN
                         << " true: " << record.BestMoves[0].as_string()
                         << "; pred: " << prediction.Move.as_string()

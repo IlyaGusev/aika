@@ -3,77 +3,75 @@
 #include <strategy.h>
 #include <util.h>
 
-#include <boost/unordered_map.hpp>
+#include <cstdint>
+#include <vector>
 
 class TTranspositionTable {
 public:
-    enum class ENodeType : short {
+    enum class ENodeType : std::int8_t {
         Unknown = -1,
         PV = 0,
         Cut,
-        All,
-        Count
+        All
     };
 
-    struct TNode {
-        int Depth = 0;
-        TMoveInfo Move;
+    static constexpr int32_t UNKNOWN_EVAL = INT32_MIN;
+
+    struct TEntry {
+        uint64_t Hash = 0;
+        int32_t Score = 0;
+        int32_t StaticEval = UNKNOWN_EVAL;
+        lczero::Move Move;
+        int16_t Depth = 0;
         ENodeType Type = ENodeType::Unknown;
-
-        explicit TNode(int depth, const TMoveInfo& move, ENodeType type)
-            : Depth(depth)
-            , Move(move)
-            , Type(type)
-        {}
-    };
-
-    struct TPositionHasher {
-        uint64_t operator() (const lczero::Position& pos) const {
-            return pos.GetBoard().Hash();
-        }
-    };
-
-    struct TPositionEqualFn {
-        bool operator() (
-            const lczero::Position& p1,
-            const lczero::Position& p2
-        ) const {
-            return p1.GetBoard() == p2.GetBoard();
-        }
     };
 
 private:
-    boost::unordered_map<lczero::Position, TNode, TPositionHasher, TPositionEqualFn> Data;
-    boost::unordered_map<ENodeType, size_t> InsertCounts;
-    mutable boost::unordered_map<ENodeType, size_t> FindCounts;
+    static constexpr size_t SIZE = size_t(1) << 21;
+    std::vector<TEntry> Data;
 
 public:
-    TTranspositionTable() {}
+    TTranspositionTable() : Data(SIZE) {}
+
+    const TEntry* Find(uint64_t hash) const {
+        const TEntry& entry = Data[hash & (SIZE - 1)];
+        if (entry.Type != ENodeType::Unknown && entry.Hash == hash) {
+            return &entry;
+        }
+        return nullptr;
+    }
 
     void Insert(
-        const lczero::Position& position,
+        uint64_t hash,
         const TMoveInfo& move,
         int depth,
         int alpha,
-        int beta
-    );
+        int beta,
+        int32_t staticEval = UNKNOWN_EVAL
+    ) {
+        ENodeType type = ENodeType::PV;
+        if (move.Score <= alpha) {
+            type = ENodeType::All;
+        } else if (move.Score >= beta) {
+            type = ENodeType::Cut;
+        }
+        TEntry& entry = Data[hash & (SIZE - 1)];
+        // Keep the deeper entry for the same position, otherwise always replace
+        if (entry.Type == ENodeType::Unknown || entry.Hash != hash || depth > entry.Depth) {
+            entry.Hash = hash;
+            entry.Score = move.Score;
+            entry.StaticEval = staticEval;
+            entry.Move = move.Move;
+            entry.Depth = static_cast<int16_t>(depth);
+            entry.Type = type;
+        }
+    }
 
-    std::optional<TNode> Find(
-        const lczero::Position& position,
-        int depth = 0
-    ) const;
+    std::string GetStats() const {
+        return "TT: fixed-size table";
+    }
 
-    std::string GetStats() const;
-
-    void Clear();
-
-private:
-    void Insert(
-        const lczero::Position& position,
-        const TMoveInfo& move,
-        int depth,
-        ENodeType type
-    );
-
-    const char* ToString(ENodeType type) const;
+    void Clear() {
+        std::fill(Data.begin(), Data.end(), TEntry{});
+    }
 };

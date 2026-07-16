@@ -44,7 +44,6 @@ set(SOURCE_FILES
     src/search/config.cpp
     src/search/see.cpp
     src/search/history_heuristics.cpp
-    src/search/transposition_table.cpp
     src/search/move_ordering.cpp
     src/search/killer_moves.cpp
 )

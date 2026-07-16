@@ -143,37 +143,64 @@ constexpr std::array<
 constexpr std::array<unsigned char, static_cast<size_t>(EPieceType::Count)>
     GAMEPHASE_INC{{0, 1, 1, 2, 4, 0}};
 
-int CalcPSTScore(const lczero::Position& position) {
-    std::array<int, 2> midgameScores;
-    std::array<int, 2> endgameScores;
-    midgameScores.fill(0);
-    endgameScores.fill(0);
+// Midgame and endgame values (with material folded in) packed into one int:
+// eg in the high half, mg in the low half, Stockfish-style
+constexpr int PackScore(int mg, int eg) {
+    return static_cast<int>(static_cast<unsigned>(eg) << 16) + mg;
+}
 
-    int gamePhase = 0;
-    const auto& board = position.GetBoard();
-    const auto& ours = board.ours();
-    const auto& theirs = board.theirs();
+constexpr std::int16_t UnpackMg(int packed) {
+    return static_cast<std::int16_t>(static_cast<std::uint16_t>(packed));
+}
+
+constexpr std::int16_t UnpackEg(int packed) {
+    return static_cast<std::int16_t>(
+        static_cast<std::uint16_t>((static_cast<unsigned>(packed) + 0x8000) >> 16));
+}
+
+constexpr auto BuildPackedPST() {
+    std::array<std::array<int, 64>,
+        static_cast<size_t>(EPieceType::Count)> packed{};
     constexpr size_t midgame = static_cast<size_t>(EGamePhase::Midgame);
     constexpr size_t endgame = static_cast<size_t>(EGamePhase::Endgame);
-    for (char row = 7; row >= 0; --row) {
-        for (char col = 0; col < 8; ++col) {
-            bool isOurs = ours.get(row, col);
-            bool isTheirs = theirs.get(row, col);
-            if (!isOurs && !isTheirs) {
-                continue;
-            }
-            const size_t pieceType = static_cast<size_t>(GetPieceType(board, lczero::BoardSquare(row, col)));
-            const unsigned char square = ((isOurs) ? (7 - row) : row) * 8 + col;
-            const size_t side = static_cast<size_t>(isTheirs);
-            midgameScores[side] += MATERIAL_SCORES[pieceType][midgame] +
-                PST_POSITIONS[pieceType][midgame][square];
-            endgameScores[side] += MATERIAL_SCORES[pieceType][endgame] +
-                PST_POSITIONS[pieceType][endgame][square];
+    for (size_t pieceType = 0; pieceType < packed.size(); ++pieceType) {
+        for (size_t sq = 0; sq < 64; ++sq) {
+            packed[pieceType][sq] = PackScore(
+                MATERIAL_SCORES[pieceType][midgame] + PST_POSITIONS[pieceType][midgame][sq],
+                MATERIAL_SCORES[pieceType][endgame] + PST_POSITIONS[pieceType][endgame][sq]);
+        }
+    }
+    return packed;
+}
+
+constexpr auto PACKED_PST = BuildPackedPST();
+
+int CalcPSTScore(const lczero::Position& position) {
+    std::array<int, 2> packedScores{{0, 0}};
+    int gamePhase = 0;
+    const auto& board = position.GetBoard();
+    const auto ours = board.ours();
+    const std::array<lczero::BitBoard, static_cast<size_t>(EPieceType::Count)> bitboards{{
+        board.pawns(),
+        board.knights(),
+        board.bishops(),
+        board.rooks(),
+        board.queens(),
+        board.kings()
+    }};
+    for (size_t pieceType = 0; pieceType < bitboards.size(); ++pieceType) {
+        for (const lczero::BoardSquare sq : bitboards[pieceType]) {
+            const bool isOurs = ours.get(sq);
+            const unsigned char square =
+                (isOurs ? (7 - sq.row()) : sq.row()) * 8 + sq.col();
+            packedScores[static_cast<size_t>(!isOurs)] += PACKED_PST[pieceType][square];
             gamePhase += GAMEPHASE_INC[pieceType];
         }
     }
-    const int mgScore = midgameScores[0] - midgameScores[1];
-    const int egScore = endgameScores[0] - endgameScores[1];
+    const int packedDiff0 = packedScores[0];
+    const int packedDiff1 = packedScores[1];
+    const int mgScore = UnpackMg(packedDiff0) - UnpackMg(packedDiff1);
+    const int egScore = UnpackEg(packedDiff0) - UnpackEg(packedDiff1);
 
     const int mgPhase = std::min(gamePhase, 24); // in case of early promotion
     const int egPhase = 24 - mgPhase;

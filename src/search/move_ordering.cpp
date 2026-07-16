@@ -13,7 +13,9 @@ std::vector<TMoveInfo> TMoveOrdering::Order(
     for (const lczero::Move& move : moves) {
         movesScores.emplace_back(move, CalcMoveOrder(move, ply));
     }
-    std::stable_sort(movesScores.begin(), movesScores.end(),
+    // Comparator is a total order (packed move breaks ties), plain sort is
+    // deterministic and avoids stable_sort's temp buffer
+    std::sort(movesScores.begin(), movesScores.end(),
         [](const TMoveInfo & a, const TMoveInfo& b) -> bool {
             if (a.Score < b.Score) return true;
             if (a.Score > b.Score) return false;

@@ -81,14 +81,28 @@ Strategies are tried in order in `TController::MakeMove()` until one returns a m
 ### Search Engine Components
 
 **TSearchStrategy** (`src/search_strategy.h`) is the core engine implementing:
-- Alpha-beta pruning with negamax framework
-- Quiescence search for capture sequences
+- Alpha-beta pruning with negamax framework, PVS (zero-window searches with
+  re-search on fail-high, active under `enable_alpha_beta`)
+- Aspiration windows at the root from depth 5 (needs TT + alpha-beta)
+- Quiescence search for capture sequences (SEE-filtered, delta pruning,
+  fail-soft stand pat); at qsearch nodes with PST eval on, only captures are
+  legality-checked instead of generating all legal moves
+- Check extension: a move giving check keeps the parent's depth (capped at
+  ply 4×depth against perpetual-check blowup)
+- Mate-distance scoring: mate scores are node-relative (MAX_SCORE − plies),
+  decremented per backup step in `AdjustChildScore`, so faster mates win
 - Move ordering with multiple heuristics (see `src/search/move_ordering.cpp`)
-- Transposition table (`src/search/transposition_table.h`)
+- Transposition table: fixed-size (2^21 entries) hash-indexed array with
+  depth-preferred same-position replacement; entries cache the static eval
+  (`src/search/transposition_table.h`, header-only)
 - History heuristics (`src/search/history_heuristics.h`)
 - Killer moves (`src/search/killer_moves.h`)
 - Late Move Reduction (LMR)
 - Null move pruning
+- Reverse futility pruning at depth ≤ 2 (gated on `enable_null_move`) and
+  futility pruning of quiet non-checking moves at depth 1 (gated on
+  `enable_lmr`) — gated on those flags so the `alpha_beta` equivalence test,
+  which runs with them off, stays exact
 - Static Exchange Evaluation (SEE) (`src/search/see.h`)
 
 **TSearchConfig** (`src/search/config.h`) controls search features via JSON:
@@ -152,11 +166,11 @@ CI (`.github/workflows/cpp.yml`) builds and runs `make test` on every push/PR to
 - `perfit`: perft(6) from startpos must equal exactly 119,060,324 (move generation correctness)
 - `search`:
   - `alpha_beta`: pruning soundness — identical move+score with alpha-beta on/off at depth 3
-  - `custom_epd`: 20 tactical positions (`tests/data/custom.epd`) solved at depths 5–7, hard assertions
+  - `custom_epd`: 20 tactical positions (`tests/data/custom.epd`) solved at depths 5–7, hard assertions; per EPD semantics any move listed in `bm` is accepted (Custom 17 has a verified cook: both Rxg8 and Rxc7 mate in 4)
   - `bratko_kopec`: strength suite, 12 of 24 positions enabled in the EPD; misses are soft warnings
   - `time_benchmark` / `deterministic_benchmark`: depth-8 all-features search on a fixed FEN; time and node count are BOOST_WARN only (never fail the suite)
 
-**Baselines (2026-07-16, commit b9ffd15, this machine):** all suites pass. Bratko-Kopec 8/12. Deterministic benchmark 11,323,218 nodes. time_benchmark 41.7 s (~272k nodes/s) — far above its aspirational 1 s target — and picks f3f1 where the test expects f4f5 (both soft warnings; baseline shifted with the b9ffd15 search change). perft(6) ~53 s. Server with default `search_config.json` (depth 6) answers `/make_move` in 150–350 ms.
+**Baselines (2026-07-16, after the search optimization pass, this machine):** all suites pass. Bratko-Kopec 8/12. Deterministic benchmark 324,781 nodes. time_benchmark ~740 ms (meets its 1 s target; was 41.7 s / 11.3M nodes at commit b9ffd15) and picks f3f1 where the test expects f4f5 (soft warning, same as before). perft(6) ~53 s. Server with default `search_config.json` (depth 6) answers `/make_move` in 70–220 ms. This is a shared machine — wall times can inflate ~1.5× under other users' load; node counts are deterministic.
 
 ## Code Style
 

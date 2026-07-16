@@ -26,7 +26,7 @@ int EvaluateStaticExchange(
     fromSquare.Mirror();
 
     lczero::Move move(fromSquare, toSquare);
-    ENSURE(UNLIKELY(IsCapture(position, move)),
+    DENSURE(UNLIKELY(IsCapture(position, move)),
         "Not a capture in SEE, move: " << move.as_string()
         << position.DebugString());
     const EPieceType toPiece = GetPieceType(position.GetBoard(), toSquare);
@@ -46,7 +46,7 @@ int EvaluateCaptureSEE(
     const lczero::Position& position,
     const lczero::Move& move
 ) {
-    ENSURE(UNLIKELY(IsCapture(position, move)),
+    DENSURE(UNLIKELY(IsCapture(position, move)),
         "Not a capture in capture SEE, move: " << move.as_string()
         << position.DebugString());
 
@@ -68,7 +68,7 @@ int EvaluateQuietSEE(
     const lczero::Position& position,
     const lczero::Move& move
 ) {
-    ENSURE(UNLIKELY(!IsCapture(position, move)),
+    DENSURE(UNLIKELY(!IsCapture(position, move)),
         "Capture in quiet SEE, move: " << move.as_string()
         << position.DebugString());
 

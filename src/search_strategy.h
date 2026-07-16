@@ -7,7 +7,6 @@
 #include <search/transposition_table.h>
 #include <search/killer_moves.h>
 
-#include <unordered_map>
 #include <string>
 
 struct TSearchNode {
@@ -37,13 +36,6 @@ struct TSearchNode {
     {}
 };
 
-struct TBetaCutoffStats {
-    std::unordered_map<size_t, size_t> PositionsCounts;
-
-    void Increment(size_t position) { PositionsCounts[position] += 1; }
-    std::string GetStats() const;
-};
-
 
 class TSearchStrategy : public IStrategy {
 public:
@@ -70,20 +62,6 @@ private:
         int beta
     );
 
-    std::optional<TMoveInfo> TryNullMove(
-        const TSearchNode& node,
-        int beta,
-        int staticScore
-    );
-
-    std::optional<TMoveInfo> TryLMR(
-        const TSearchNode& node,
-        const lczero::Move& move,
-        int alpha,
-        int beta,
-        size_t moveNumber
-    );
-
     TMoveInfo QuiescenceSearch(
         const TSearchNode& node,
         int alpha,
@@ -95,5 +73,4 @@ private:
     THistoryHeuristics HistoryHeuristics;
     TSearchConfig Config;
     TKillerMoves KillerMoves;
-    TBetaCutoffStats BetaCutoffStats;
 };
