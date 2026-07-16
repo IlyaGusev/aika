@@ -47,6 +47,10 @@ cd build
 ./perfit  # or ./search, ./see, ./pst
 ```
 
+Run test binaries with `--log_level=message` to see benchmark output (times, node counts, EPD suite scores) that ctest hides.
+
+**Environment gotcha (this machine):** `cmake` and `ctest` on PATH are broken pip shims in `~/.local/bin` (`ModuleNotFoundError: No module named 'cmake'`). Use `/usr/bin/cmake` and `/usr/bin/ctest` explicitly.
+
 **Running the server:**
 ```bash
 cd build
@@ -93,11 +97,11 @@ Strategies are tried in order in `TController::MakeMove()` until one returns a m
 - `enable_alpha_beta`: Toggle alpha-beta pruning
 - `enable_tt`: Toggle transposition table
 - `enable_pst`: Toggle piece-square tables in evaluation
-- `enable_null_move`: Toggle null move pruning
-- `enable_lmr`: Toggle late move reduction
+- `enable_null_move`: Toggle null move pruning (plus `null_move_depth_reduction`, `null_move_eval_margin`)
+- `enable_lmr`: Toggle late move reduction (plus `lmr_min_move_number`, `lmr_min_ply`, `lmr_min_depth`, `lmr_reduction`)
 - `enable_killers`: Toggle killer move heuristic
-- `enable_hh`: Toggle history heuristics
-- `enable_see_skip`: Toggle SEE-based quiet move skipping
+
+Note: `EnableHH` (history heuristics) and `EnableSEESkip`/`SEESkipQuietMargin` exist as struct fields but are NOT parsed from JSON in `src/search/config.cpp` — they can only be set programmatically (e.g. in tests).
 
 ### Evaluation
 
@@ -113,7 +117,7 @@ Evaluation (`src/evaluation.cpp`) combines:
 **Parameters:**
 - `pgn`: PGN string representing the game history
 
-**Response:** JSON with `best_move` field containing UCI move notation or `#` for game over
+**Response:** JSON with `best_move` (UCI notation, or `#` for game over), `score`, `strategy` (name of the strategy that produced the move), `nodes`, `time` (ms), and `depth`
 
 The controller (`src/controller.cpp`) parses PGN using lc0's `PgnReader`, checks for game end, then queries strategies.
 
@@ -128,6 +132,8 @@ Critical lc0 types used throughout:
 
 Moves are generated via `position.GenerateLegalMoves()` and applied via `Position(oldPosition, move)` constructor.
 
+**Move format gotcha:** lc0 moves are always from the side-to-move's perspective. Before emitting UCI, the controller converts with `board.GetLegacyMove(move)` (castling fix) and `move.Mirror()` when black is to move (see `src/controller.cpp:60-66`).
+
 ### Testing
 
 Tests are in `tests/` directory:
@@ -136,7 +142,21 @@ Tests are in `tests/` directory:
 - `see.cpp`: Static exchange evaluation tests
 - `pst.cpp`: Piece-square table tests
 
-Each test file compiles to a standalone executable using Boost.Test.
+Each test file compiles to a standalone executable using Boost.Test. Test data lives in `tests/data/` and is located via the `TEST_PATH` compile definition.
+
+CI (`.github/workflows/cpp.yml`) builds and runs `make test` on every push/PR to `main`.
+
+**What each suite checks:**
+- `pst`: `CalcPSTScore` against hand-computed values for opening/endgame FENs (tapered eval)
+- `see`: smallest-attacker selection and static exchange evaluation, both colors, incl. external positions
+- `perfit`: perft(6) from startpos must equal exactly 119,060,324 (move generation correctness)
+- `search`:
+  - `alpha_beta`: pruning soundness — identical move+score with alpha-beta on/off at depth 3
+  - `custom_epd`: 20 tactical positions (`tests/data/custom.epd`) solved at depths 5–7, hard assertions
+  - `bratko_kopec`: strength suite, 12 of 24 positions enabled in the EPD; misses are soft warnings
+  - `time_benchmark` / `deterministic_benchmark`: depth-8 all-features search on a fixed FEN; time and node count are BOOST_WARN only (never fail the suite)
+
+**Baselines (2026-07-16, commit b9ffd15, this machine):** all suites pass. Bratko-Kopec 8/12. Deterministic benchmark 11,323,218 nodes. time_benchmark 41.7 s (~272k nodes/s) — far above its aspirational 1 s target — and picks f3f1 where the test expects f4f5 (both soft warnings; baseline shifted with the b9ffd15 search change). perft(6) ~53 s. Server with default `search_config.json` (depth 6) answers `/make_move` in 150–350 ms.
 
 ## Code Style
 
