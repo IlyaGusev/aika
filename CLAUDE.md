@@ -170,7 +170,7 @@ CI (`.github/workflows/cpp.yml`) builds and runs `make test` on every push/PR to
   - `bratko_kopec`: strength suite, 12 of 24 positions enabled in the EPD; misses are soft warnings
   - `time_benchmark` / `deterministic_benchmark`: depth-8 all-features search on a fixed FEN; time and node count are BOOST_WARN only (never fail the suite)
 
-**Baselines (2026-07-16, after the search optimization pass, this machine):** all suites pass. Bratko-Kopec 8/12. Deterministic benchmark 324,781 nodes. time_benchmark ~740 ms (meets its 1 s target; was 41.7 s / 11.3M nodes at commit b9ffd15) and picks f3f1 where the test expects f4f5 (soft warning, same as before). perft(6) ~53 s. Server with default `search_config.json` (depth 6) answers `/make_move` in 70–220 ms. This is a shared machine — wall times can inflate ~1.5× under other users' load; node counts are deterministic.
+**Baselines (2026-07-16, after the search optimization pass, this machine):** all suites pass with `MAX_DEPTH = 12` (raised from 8 after the pass): time_benchmark / deterministic_benchmark run at depth 12 (~52 s, 24,762,226 nodes — the 1 s warn is aspirational again; depth 8 was ~740 ms / 324,781 nodes, vs 41.7 s / 11.3M nodes at commit b9ffd15), custom_epd at depths 5–11, Bratko-Kopec 9/12 at depth 11. Full search suite ~4 min. perft(6) ~53 s. Server with default `search_config.json` (depth 6) answers `/make_move` in 70–220 ms. This is a shared machine — wall times can inflate ~1.5× under other users' load; node counts are deterministic.
 
 ## Code Style
 

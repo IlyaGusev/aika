@@ -15,7 +15,7 @@
 
 #include <iostream>
 
-constexpr size_t MAX_DEPTH = 8;
+constexpr size_t MAX_DEPTH = 12;
 
 TMoveInfo GetFenBestMove(const std::string& fen, int depth = 1, bool useAllFeatures = false) {
     lczero::ChessBoard board(fen);
