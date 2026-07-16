@@ -19,6 +19,15 @@ int Evaluate(
     bool usePST = true
 );
 
+// Search-path variant: skips opponent move generation. Valid for positions
+// reached by legal moves, where the opponent's king can't be en prise and
+// their mate/stalemate is not a terminal state.
+int Evaluate(
+    const lczero::Position& position,
+    const std::vector<lczero::Move>& ourLegalMoves,
+    bool usePST
+);
+
 int CalcMaterialScore(
     const lczero::Position& position
 );

@@ -25,6 +25,16 @@ bool IsTerminal(
     return false;
 }
 
+bool IsTerminal(
+    const lczero::Position& position,
+    const std::vector<lczero::Move>& ourLegalMoves
+) {
+    // HasMatingMaterial considers both sides, one check suffices
+    return ourLegalMoves.empty()
+        || !position.GetBoard().HasMatingMaterial()
+        || position.GetRule50Ply() >= 100;
+}
+
 bool IsCapture(
     const lczero::Position& position,
     const lczero::Move& move

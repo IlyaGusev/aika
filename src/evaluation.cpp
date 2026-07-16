@@ -51,6 +51,26 @@ int Evaluate(
     return matScore + mobScore;
 }
 
+int Evaluate(
+    const lczero::Position& position,
+    const std::vector<lczero::Move>& ourLegalMoves,
+    bool usePST
+) {
+    const auto& board = position.GetBoard();
+    if (ourLegalMoves.empty()) {
+        return board.IsUnderCheck() ? MIN_SCORE_VALUE : 0;
+    }
+    if (!board.HasMatingMaterial() || position.GetRule50Ply() >= 100) {
+        return 0;
+    }
+    if (usePST) {
+        return CalcPSTScore(position);
+    }
+    // Mobility is the only consumer of opponent moves, generate them lazily
+    const auto& theirLegalMoves = position.GetThemBoard().GenerateLegalMoves();
+    return CalcMaterialScore(position) + CalcMobilityScore(ourLegalMoves, theirLegalMoves);
+}
+
 int CalcMaterialScore(
     const lczero::Position& position
 ) {

@@ -38,16 +38,11 @@ TMoveInfo TSearchStrategy::Search(
     }
 
     const auto& ourLegalMoves = board.GenerateLegalMoves();
-    const auto& theirBoard = position.GetThemBoard();
-    const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
 
     // Eval for leaves
-    const int staticScore = Evaluate(
-        position, ourLegalMoves,
-        theirLegalMoves, Config.EnablePST
-    );
+    const int staticScore = Evaluate(position, ourLegalMoves, Config.EnablePST);
 
-    if (IsTerminal(position, ourLegalMoves, theirLegalMoves)) {
+    if (IsTerminal(position, ourLegalMoves)) {
         return {staticScore};
     }
 
@@ -86,11 +81,10 @@ TMoveInfo TSearchStrategy::Search(
         const bool isCapture = IsCapture(position, ourMove);
         const bool isPromotion = IsPromotion(ourMove);
         const bool isUnderCheck = board.IsUnderCheck();
-        const bool isGivingCheck = lczero::Position(position, ourMove).GetBoard().IsUnderCheck();
 
-        if (Config.EnableSEESkip && !isUnderCheck && !isCapture && !isPromotion && !isGivingCheck) {
-            const int margin = Config.SEESkipQuietMargin;
-            if (EvaluateSEE(position, ourMove) < margin) {
+        if (Config.EnableSEESkip && !isUnderCheck && !isCapture && !isPromotion) {
+            const bool isGivingCheck = lczero::Position(position, ourMove).GetBoard().IsUnderCheck();
+            if (!isGivingCheck && EvaluateSEE(position, ourMove) < Config.SEESkipQuietMargin) {
                 continue;
             }
         }
@@ -214,15 +208,10 @@ TMoveInfo TSearchStrategy::QuiescenceSearch(
     ENSURE(depth <= 0, "Incorrect depth for QSearch");
 
     const auto& ourLegalMoves = board.GenerateLegalMoves();
-    const auto& theirBoard = position.GetThemBoard();
-    const auto& theirLegalMoves = theirBoard.GenerateLegalMoves();
 
-    const int staticScore = Evaluate(
-        position, ourLegalMoves,
-        theirLegalMoves, Config.EnablePST
-    );
+    const int staticScore = Evaluate(position, ourLegalMoves, Config.EnablePST);
 
-    if (IsTerminal(position, ourLegalMoves, theirLegalMoves) || (-depth == Config.QuiescenceSearchDepth)) {
+    if (IsTerminal(position, ourLegalMoves) || (-depth == Config.QuiescenceSearchDepth)) {
         return {staticScore};
     }
     alpha = std::max(alpha, staticScore);

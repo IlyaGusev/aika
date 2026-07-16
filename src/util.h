@@ -50,6 +50,12 @@ bool IsTerminal(
     const std::vector<lczero::Move>& theirLegalMoves
 );
 
+// Search-path variant: no opponent move list needed, see Evaluate overload.
+bool IsTerminal(
+    const lczero::Position& position,
+    const std::vector<lczero::Move>& ourLegalMoves
+);
+
 bool IsCapture(
     const lczero::Position& position,
     const lczero::Move& move
