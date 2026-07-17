@@ -70,6 +70,21 @@ TMoveInfo TSearchStrategy::Search(
     const size_t ply = node.Ply;
     ENSURE(depth >= 0, "Incorrect depth for Search");
 
+    // Root must always produce a move; aborted subtrees unwind with garbage
+    // scores that MakeMove discards
+    if (DeadlineEnabled && ply > 0) {
+        if (Aborted) {
+            return {alpha};
+        }
+        if (++NodesSinceTimeCheck >= 4096) {
+            NodesSinceTimeCheck = 0;
+            if (std::chrono::steady_clock::now() >= Deadline) {
+                Aborted = true;
+                return {alpha};
+            }
+        }
+    }
+
     const uint64_t positionHash = node.HashValue;
     const auto* ttEntry = Config.EnableTT ? TranspositionTable.Find(positionHash) : nullptr;
     if (ttEntry && ttEntry->Depth >= depth) {
@@ -364,7 +379,7 @@ TMoveInfo TSearchStrategy::Search(
         moveNumber += 1;
     }
 
-    if (Config.EnableTT) {
+    if (Config.EnableTT && !Aborted) {
         const int32_t evalToStore = needStatic ? staticScore
             : ttEntry ? ttEntry->StaticEval : TTranspositionTable::UNKNOWN_EVAL;
         TranspositionTable.Insert(
@@ -551,7 +566,15 @@ std::optional<TMoveInfo> TSearchStrategy::MakeMove(
     auto timerStart = std::chrono::high_resolution_clock::now();
     int currentDepth = 0;
     HistoryHeuristics.Clear();
+    DeadlineEnabled = Config.TimeLimitMs > 0;
+    Aborted = false;
+    NodesSinceTimeCheck = 0;
+    if (DeadlineEnabled) {
+        Deadline = std::chrono::steady_clock::now()
+            + std::chrono::milliseconds(Config.TimeLimitMs);
+    }
     TMoveInfo move;
+    bool haveCompletedIteration = false;
     int prevScore = 0;
     while (currentDepth <= Config.Depth) {
         TSearchNode startNode{
@@ -567,10 +590,21 @@ std::optional<TMoveInfo> TSearchStrategy::MakeMove(
             alpha = prevScore - ASPIRATION_WINDOW;
             beta = prevScore + ASPIRATION_WINDOW;
         }
-        move = Search(startNode, alpha, beta);
-        if (useAspiration && (move.Score <= alpha || move.Score >= beta)) {
-            move = Search(startNode, MIN_SCORE_VALUE, MAX_SCORE_VALUE);
+        TMoveInfo iterMove = Search(startNode, alpha, beta);
+        if (!Aborted && useAspiration
+                && (iterMove.Score <= alpha || iterMove.Score >= beta)) {
+            iterMove = Search(startNode, MIN_SCORE_VALUE, MAX_SCORE_VALUE);
         }
+        if (Aborted) {
+            // Keep the last completed iteration's move; the aborted root
+            // still returns a legal move as a fallback for the first one
+            if (!haveCompletedIteration) {
+                move = iterMove;
+            }
+            break;
+        }
+        move = iterMove;
+        haveCompletedIteration = true;
         auto timerEnd = std::chrono::high_resolution_clock::now();
         move.NodesCount = startNode.TreeNodesCount;
         move.TimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(

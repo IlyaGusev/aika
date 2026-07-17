@@ -24,8 +24,9 @@ struct TSearchConfig {
     // Root budgets below this keep conservative pruning (exact tactics);
     // deeper budgets enable the aggressive stack
     int AggressiveDepthMin = 12;
-    // Soft cap for iterative deepening: no new iteration starts after this
-    // many ms (0 = off); the running iteration always completes
+    // Time cap for iterative deepening (0 = off): no new iteration starts
+    // once half the budget is spent, and a running iteration is hard-aborted
+    // at the full budget (its partial result is discarded)
     int TimeLimitMs = 0;
     bool EnableSEESkip = false;
     int SEESkipQuietMargin = 0;
