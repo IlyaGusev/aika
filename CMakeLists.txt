@@ -64,6 +64,9 @@ target_link_libraries(${PROJECT_NAME}_lib PRIVATE ${LIB_LIST})
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB_LIST} ${PROJECT_NAME}_lib)
 
+add_executable(${PROJECT_NAME}_uci src/uci.cpp)
+target_link_libraries(${PROJECT_NAME}_uci PRIVATE ${LIB_LIST} ${PROJECT_NAME}_lib)
+
 enable_testing()
 
 file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} tests/*.cpp)

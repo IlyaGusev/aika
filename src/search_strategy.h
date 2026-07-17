@@ -8,6 +8,7 @@
 #include <search/transposition_table.h>
 #include <search/killer_moves.h>
 
+#include <chrono>
 #include <string>
 
 struct TSearchNode {
@@ -79,6 +80,14 @@ public:
         const lczero::PositionHistory& history
     ) override;
 
+    void SetTimeLimit(int timeLimitMs) {
+        Config.TimeLimitMs = timeLimitMs;
+    }
+
+    void SetDepth(int depth) {
+        Config.Depth = depth;
+    }
+
     const char* GetName() const override {
         return "Search";
     }
@@ -101,4 +110,11 @@ private:
     THistoryHeuristics HistoryHeuristics;
     TSearchConfig Config;
     TKillerMoves KillerMoves;
+
+    // Hard deadline (TimeLimitMs after search start, active only when > 0):
+    // an iteration running past it is aborted and its result discarded
+    std::chrono::steady_clock::time_point Deadline;
+    bool DeadlineEnabled = false;
+    bool Aborted = false;
+    size_t NodesSinceTimeCheck = 0;
 };

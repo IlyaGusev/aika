@@ -65,6 +65,20 @@ cd build
 - `--search_config` (default: search_config.json): Path to search configuration
 - `--book` (default: empty): Path to opening book file
 
+**UCI engine (`build/aika_uci`, `src/uci.cpp`):** minimal UCI adapter for
+GUIs/match tools (works with python-chess and cutechess-cli). Supports
+`position startpos|fen ... moves ...`, `go depth|movetime|wtime/btime/winc/binc`
+(clock allocation: time/30 + inc/2, capped at time/3), `ucinewgame` (fresh TT).
+Search is synchronous — `stop` is ignored. Uses the same feature set as the
+default `search_config.json` (depth cap 30). Incoming/outgoing moves are
+converted via `GetLegacyMove` + `Mirror` (see move format gotcha below);
+UCI moves are matched by string against generated legal moves. Measured
+strength (2026-07-17, this machine, 250 ms/move both sides, python-chess
+harness, 96 games vs Stockfish 16.1 with UCI_LimitStrength): 18/32 vs
+UCI_Elo 2450, 13.5/32 vs 2600, 8.5/32 vs 2750 → MLE estimate ~2530 Elo
+(95% CI [2460, 2600]) on the SF 16.1 UCI_Elo scale. This scale is SF's
+internal calibration, not directly comparable to CCRL/FIDE ratings.
+
 ## Architecture
 
 ### Strategy Pattern for Move Selection
@@ -143,7 +157,7 @@ Strategies are tried in order in `TController::MakeMove()` until one returns a m
 - `enable_lmr`: Toggle late move reduction (plus `lmr_min_move_number`, `lmr_min_ply`, `lmr_min_depth`, `lmr_reduction`)
 - `enable_killers`: Toggle killer move heuristic
 
-- `time_limit_ms`: soft time cap for iterative deepening (0 = off): no new iteration starts once half the budget is spent, the running one always completes; combine with a high `depth` for time-based play
+- `time_limit_ms`: time cap for iterative deepening (0 = off): no new iteration starts once half the budget is spent, and a running iteration is hard-aborted at the full budget (partial result discarded, last completed iteration's move is kept); combine with a high `depth` for time-based play
 - `aggressive_depth_min`: root depth budget enabling the aggressive pruning stack (default 12)
 
 Note: `EnableHH` (history heuristics) and `EnableSEESkip`/`SEESkipQuietMargin` exist as struct fields but are NOT parsed from JSON in `src/search/config.cpp` — they can only be set programmatically (e.g. in tests).
