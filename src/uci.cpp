@@ -116,6 +116,8 @@ int main() {
         if (command == "uci") {
             std::cout << "id name Aika\n"
                       << "id author Ilya Gusev\n"
+                      // Single-threaded; advertised so GUIs can set it
+                      << "option name Threads type spin default 1 min 1 max 1\n"
                       << "uciok" << std::endl;
         } else if (command == "isready") {
             std::cout << "readyok" << std::endl;

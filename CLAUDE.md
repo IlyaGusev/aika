@@ -79,6 +79,14 @@ UCI_Elo 2450, 13.5/32 vs 2600, 8.5/32 vs 2750 → MLE estimate ~2530 Elo
 (95% CI [2460, 2600]) on the SF 16.1 UCI_Elo scale. This scale is SF's
 internal calibration, not directly comparable to CCRL/FIDE ratings.
 
+**Elo protocol (`tools/elo/`):** repeatable strength measurement — see
+`tools/elo/README.md`. Every search/eval change must pass the acceptance
+gate there: ≥100 head-to-head games vs the current `main` build
+(`match.py` + `estimate.py`, 250 ms/move); accept when the 95% CI lower
+bound of the Elo diff is above −30 (above 0 for changes claiming
+strength). The Stockfish bracket in the README re-anchors the absolute
+baseline occasionally.
+
 ## Architecture
 
 ### Strategy Pattern for Move Selection
