@@ -143,7 +143,10 @@ Strategies are tried in order in `TController::MakeMove()` until one returns a m
 - `enable_lmr`: Toggle late move reduction (plus `lmr_min_move_number`, `lmr_min_ply`, `lmr_min_depth`, `lmr_reduction`)
 - `enable_killers`: Toggle killer move heuristic
 
-Note: `EnableHH` (history heuristics), `EnableSEESkip`/`SEESkipQuietMargin`, `AggressiveDepthMin` (root depth enabling the aggressive pruning stack, default 12) and `TimeLimitMs` (soft iterative-deepening time cap, default off) exist as struct fields but are NOT parsed from JSON in `src/search/config.cpp` — they can only be set programmatically (e.g. in tests or the self-play harness).
+- `time_limit_ms`: soft time cap for iterative deepening (0 = off): no new iteration starts once half the budget is spent, the running one always completes; combine with a high `depth` for time-based play
+- `aggressive_depth_min`: root depth budget enabling the aggressive pruning stack (default 12)
+
+Note: `EnableHH` (history heuristics) and `EnableSEESkip`/`SEESkipQuietMargin` exist as struct fields but are NOT parsed from JSON in `src/search/config.cpp` — they can only be set programmatically (e.g. in tests).
 
 ### Evaluation
 
@@ -198,7 +201,7 @@ CI (`.github/workflows/cpp.yml`) builds and runs `make test` on every push/PR to
   - `bratko_kopec`: strength suite, 12 of 24 positions enabled in the EPD; misses are soft warnings
   - `time_benchmark` / `deterministic_benchmark`: depth-8 all-features search on a fixed FEN; time and node count are BOOST_WARN only (never fail the suite)
 
-**Baselines (2026-07-17, after the second search optimization pass, this machine):** all suites pass with `MAX_DEPTH = 12`: time_benchmark / deterministic_benchmark run at depth 12 in ~0.6 s, 277,749 nodes (the 1 s warn now passes; before the pass it was ~52 s / 24.76M nodes), custom_epd at depths 5–11, Bratko-Kopec 9/12 at depth 11 (same as before the pass — depths ≤ 11 run the original conservative search). Equal-time self-play (250 ms/move): aggressive stack +82 Elo [+44, +123] vs conservative over 116 games. Full search suite a few minutes (custom_epd/Bratko-Kopec depths ≤ 11 are conservative and dominate it). perft(6) ~53 s. Server with default `search_config.json` (depth 6) answers `/make_move` in 70–220 ms. This is a shared machine — wall times can inflate ~1.5× under other users' load; node counts are deterministic.
+**Baselines (2026-07-17, after the second search optimization pass, this machine):** all suites pass with `MAX_DEPTH = 12`: time_benchmark / deterministic_benchmark run at depth 12 in ~0.6 s, 277,749 nodes (the 1 s warn now passes; before the pass it was ~52 s / 24.76M nodes), custom_epd at depths 5–11, Bratko-Kopec 9/12 at depth 11 (same as before the pass — depths ≤ 11 run the original conservative search). Equal-time self-play (250 ms/move): aggressive stack +82 Elo [+44, +123] vs conservative over 116 games. Full search suite a few minutes (custom_epd/Bratko-Kopec depths ≤ 11 are conservative and dominate it). perft(6) ~53 s. Server with default `search_config.json` (time_limit_ms 800, depth cap 30) answers `/make_move` in ~0.4–0.7 s at depths 13–15. This is a shared machine — wall times can inflate ~1.5× under other users' load; node counts are deterministic.
 
 ## Code Style
 

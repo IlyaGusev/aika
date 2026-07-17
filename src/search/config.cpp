@@ -28,4 +28,7 @@ void TSearchConfig::Parse(const std::string& configFile) {
     LMRReduction = root.get("lmr_reduction", LMRReduction).asInt();
 
     EnableKillers = root.get("enable_killers", EnableKillers).asInt();
+
+    TimeLimitMs = root.get("time_limit_ms", TimeLimitMs).asInt();
+    AggressiveDepthMin = root.get("aggressive_depth_min", AggressiveDepthMin).asInt();
 }

@@ -1,7 +1,10 @@
 {
-    "depth": 6,
+    "depth": 30,
+    "time_limit_ms": 800,
     "enable_alpha_beta": true,
     "enable_tt": true,
     "qsearch_depth": 10000,
-    "enable_pst": true
+    "enable_pst": true,
+    "enable_null_move": true,
+    "enable_lmr": true
 }
