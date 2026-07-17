@@ -2,6 +2,7 @@
 
 #include <strategy.h>
 #include <util.h>
+#include <pst.h>
 #include <search/config.h>
 #include <search/history_heuristics.h>
 #include <search/transposition_table.h>
@@ -12,27 +13,54 @@
 struct TSearchNode {
     lczero::Position Position;
     lczero::Move Move;
+    uint64_t HashValue;
     int Depth = 0;
     size_t Ply = 0;
     mutable size_t TreeNodesCount = 1;
+    // -1 unknown, else cached result of IsUnderCheck for this node's side
+    mutable int8_t InCheckFlag = -1;
+
+    TPstState Pst;
+
+    bool IsUnderCheck() const {
+        if (InCheckFlag < 0) {
+            InCheckFlag = Position.GetBoard().IsUnderCheck() ? 1 : 0;
+        }
+        return InCheckFlag != 0;
+    }
 
     TSearchNode(
-        const lczero::Position& oldPosition,
+        const TSearchNode& parent,
         const lczero::Move& move,
         int depth,
         size_t ply
     )
-        : Position(oldPosition, move)
+        : Position(parent.Position, move)
         , Move(move)
+        , HashValue(Position.GetBoard().Hash())
         , Depth(depth)
         , Ply(ply)
+        , Pst(ApplyMovePst(parent.Pst, parent.Position.GetBoard(), move))
     {}
 
     TSearchNode(const lczero::Position& position, int depth, size_t ply)
         : Position(position)
         , Move()
+        , HashValue(Position.GetBoard().Hash())
         , Depth(depth)
         , Ply(ply)
+        , Pst(CalcPstState(Position))
+    {}
+
+    // Null-move child: same physical position, flipped perspective
+    TSearchNode(const lczero::Position& position, const TPstState& parentPst,
+                int depth, size_t ply)
+        : Position(position)
+        , Move()
+        , HashValue(Position.GetBoard().Hash())
+        , Depth(depth)
+        , Ply(ply)
+        , Pst{{parentPst.Packed[1], parentPst.Packed[0]}, parentPst.Phase}
     {}
 };
 

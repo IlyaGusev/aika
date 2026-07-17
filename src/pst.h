@@ -19,3 +19,19 @@ constexpr std::array<
 }};
 
 int CalcPSTScore(const lczero::Position& position);
+
+// Incrementally maintained tapered-eval state: packed mg/eg sums per side
+// (side to move first) plus the game phase counter
+struct TPstState {
+    int Packed[2] = {0, 0};
+    int Phase = 0;
+};
+
+TPstState CalcPstState(const lczero::Position& position);
+// State after the side to move plays `move`, in the child's perspective;
+// board is the position BEFORE the move
+TPstState ApplyMovePst(
+    const TPstState& state,
+    const lczero::ChessBoard& board,
+    const lczero::Move& move);
+int FinalizePstScore(const TPstState& state);

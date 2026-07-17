@@ -1,5 +1,7 @@
 #include <pst.h>
 
+#include <util.h>
+
 #include <array>
 #include <iostream>
 
@@ -175,9 +177,8 @@ constexpr auto BuildPackedPST() {
 
 constexpr auto PACKED_PST = BuildPackedPST();
 
-int CalcPSTScore(const lczero::Position& position) {
-    std::array<int, 2> packedScores{{0, 0}};
-    int gamePhase = 0;
+TPstState CalcPstState(const lczero::Position& position) {
+    TPstState state;
     const auto& board = position.GetBoard();
     const auto ours = board.ours();
     const std::array<lczero::BitBoard, static_cast<size_t>(EPieceType::Count)> bitboards{{
@@ -193,17 +194,76 @@ int CalcPSTScore(const lczero::Position& position) {
             const bool isOurs = ours.get(sq);
             const unsigned char square =
                 (isOurs ? (7 - sq.row()) : sq.row()) * 8 + sq.col();
-            packedScores[static_cast<size_t>(!isOurs)] += PACKED_PST[pieceType][square];
-            gamePhase += GAMEPHASE_INC[pieceType];
+            state.Packed[static_cast<size_t>(!isOurs)] += PACKED_PST[pieceType][square];
+            state.Phase += GAMEPHASE_INC[pieceType];
         }
     }
-    const int packedDiff0 = packedScores[0];
-    const int packedDiff1 = packedScores[1];
-    const int mgScore = UnpackMg(packedDiff0) - UnpackMg(packedDiff1);
-    const int egScore = UnpackEg(packedDiff0) - UnpackEg(packedDiff1);
+    return state;
+}
 
-    const int mgPhase = std::min(gamePhase, 24); // in case of early promotion
+TPstState ApplyMovePst(
+    const TPstState& state,
+    const lczero::ChessBoard& board,
+    const lczero::Move& move
+) {
+    int us = state.Packed[0];
+    int them = state.Packed[1];
+    int phase = state.Phase;
+    const auto from = move.from();
+    const auto to = move.to();
+    const int fromIdx = (7 - from.row()) * 8 + from.col();
+    const int toIdx = (7 - to.row()) * 8 + to.col();
+    const auto piece = static_cast<size_t>(GetPieceType(board, from));
+    constexpr auto KING = static_cast<size_t>(EPieceType::King);
+    constexpr auto ROOK = static_cast<size_t>(EPieceType::Rook);
+    constexpr auto PAWN = static_cast<size_t>(EPieceType::Pawn);
+
+    // Castling comes encoded as king-takes-own-rook
+    if (piece == KING && (board.rooks() & board.ours()).get(to)) {
+        const bool kingside = to.col() > from.col();
+        const int flippedRank1 = 56; // (7 - 0) * 8
+        us += PACKED_PST[KING][flippedRank1 + (kingside ? 6 : 2)]
+            - PACKED_PST[KING][fromIdx];
+        us += PACKED_PST[ROOK][flippedRank1 + (kingside ? 5 : 3)]
+            - PACKED_PST[ROOK][flippedRank1 + to.col()];
+        return {{them, us}, phase};
+    }
+
+    if (board.theirs().get(to)) {
+        const auto victim = static_cast<size_t>(GetPieceType(board, to));
+        them -= PACKED_PST[victim][to.row() * 8 + to.col()];
+        phase -= GAMEPHASE_INC[victim];
+    } else if (piece == PAWN && from.col() != to.col()) {
+        // En passant: their pawn is one row behind the arrival square
+        them -= PACKED_PST[PAWN][(to.row() - 1) * 8 + to.col()];
+    }
+
+    us -= PACKED_PST[piece][fromIdx];
+    const auto promotion = move.promotion();
+    if (promotion != lczero::Move::Promotion::None) {
+        // lc0 promotion order: None, Queen, Rook, Bishop, Knight
+        constexpr std::array<size_t, 5> PROMO_PIECE = {0,
+            static_cast<size_t>(EPieceType::Queen),
+            static_cast<size_t>(EPieceType::Rook),
+            static_cast<size_t>(EPieceType::Bishop),
+            static_cast<size_t>(EPieceType::Knight)};
+        const auto promo = PROMO_PIECE[static_cast<size_t>(promotion)];
+        us += PACKED_PST[promo][toIdx];
+        phase += GAMEPHASE_INC[promo];
+    } else {
+        us += PACKED_PST[piece][toIdx];
+    }
+    return {{them, us}, phase};
+}
+
+int FinalizePstScore(const TPstState& state) {
+    const int mgScore = UnpackMg(state.Packed[0]) - UnpackMg(state.Packed[1]);
+    const int egScore = UnpackEg(state.Packed[0]) - UnpackEg(state.Packed[1]);
+    const int mgPhase = std::min(state.Phase, 24); // in case of early promotion
     const int egPhase = 24 - mgPhase;
-
     return (mgScore * mgPhase + egScore * egPhase) / 24;
+}
+
+int CalcPSTScore(const lczero::Position& position) {
+    return FinalizePstScore(CalcPstState(position));
 }

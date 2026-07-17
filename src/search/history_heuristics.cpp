@@ -1,27 +1,20 @@
 #include <search/history_heuristics.h>
 
+#include <algorithm>
+#include <cstdlib>
+
 THistoryHeuristics::THistoryHeuristics() {
     Clear();
 }
 
-void THistoryHeuristics::Add(
-    int side,
-    EPieceType piece,
-    const lczero::Move& move,
-    int depth
-) {
-    const size_t pieceType = static_cast<size_t>(piece);
-    PieceHistory[side][pieceType][move.to().as_int()] += depth * depth;
+void THistoryHeuristics::Add(int side, const lczero::Move& move, int bonus) {
+    bonus = std::clamp(bonus, -HISTORY_MAX, HISTORY_MAX);
+    int& value = FromToHistory[side][move.from().as_int()][move.to().as_int()];
+    value += bonus - value * std::abs(bonus) / HISTORY_MAX;
 }
 
-int THistoryHeuristics::Get(
-    int side,
-    EPieceType piece,
-    const lczero::Move& move
-) const {
-    const size_t pieceType = static_cast<size_t>(piece);
-    const int pieceScore = PieceHistory.at(side).at(pieceType).at(move.to().as_int());
-    return pieceScore;
+int THistoryHeuristics::Get(int side, const lczero::Move& move) const {
+    return FromToHistory[side][move.from().as_int()][move.to().as_int()];
 }
 
 void THistoryHeuristics::AddCounterMove(
@@ -32,13 +25,14 @@ void THistoryHeuristics::AddCounterMove(
 }
 
 lczero::Move THistoryHeuristics::GetCounterMove(const lczero::Move& previousMove) const {
-    return CounterMoves.at(previousMove.from().as_int()).at(previousMove.to().as_int());
+    return CounterMoves[previousMove.from().as_int()][previousMove.to().as_int()];
 }
 
 void THistoryHeuristics::Clear() {
-    for (size_t i = 0; i < static_cast<size_t>(EPieceType::Count); i++) {
-        PieceHistory[0][i].fill(0);
-        PieceHistory[1][i].fill(0);
+    for (auto& side : FromToHistory) {
+        for (auto& row : side) {
+            row.fill(0);
+        }
     }
     for (size_t i = 0; i < 64; i++) {
         CounterMoves[i].fill(lczero::Move());

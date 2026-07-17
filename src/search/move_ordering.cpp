@@ -6,22 +6,28 @@
 std::vector<TMoveInfo> TMoveOrdering::Order(
     const lczero::MoveList& moves,
     size_t ply,
-    bool printScores /* = false */
+    bool printScores /* = false */,
+    const std::vector<int>* seeValues /* = nullptr */
 ) const {
     std::vector<TMoveInfo> movesScores;
     movesScores.reserve(moves.size());
-    for (const lczero::Move& move : moves) {
-        movesScores.emplace_back(move, CalcMoveOrder(move, ply));
+    // Composite key: order score in the high bits, packed move as the tie
+    // break, so the sort comparator is a single integer compare
+    std::vector<std::pair<int64_t, size_t>> keys;
+    keys.reserve(moves.size());
+    for (size_t i = 0; i < moves.size(); ++i) {
+        const lczero::Move& move = moves[i];
+        const int64_t key =
+            (static_cast<int64_t>(CalcMoveOrder(
+                move, ply, seeValues ? &(*seeValues)[i] : nullptr)) << 16)
+            | move.as_packed_int();
+        keys.emplace_back(key, i);
     }
-    // Comparator is a total order (packed move breaks ties), plain sort is
-    // deterministic and avoids stable_sort's temp buffer
-    std::sort(movesScores.begin(), movesScores.end(),
-        [](const TMoveInfo & a, const TMoveInfo& b) -> bool {
-            if (a.Score < b.Score) return true;
-            if (a.Score > b.Score) return false;
-            return (a.Move.as_packed_int() < b.Move.as_packed_int());
-        }
-    );
+    std::sort(keys.begin(), keys.end());
+    for (const auto& [key, i] : keys) {
+        movesScores.emplace_back(
+            moves[i], static_cast<int>(key >> 16));
+    }
     if (printScores) {
         for (const auto& move : movesScores) {
             std::cerr << move.Move.as_string() << "(" << move.Score << ") ";
@@ -31,7 +37,8 @@ std::vector<TMoveInfo> TMoveOrdering::Order(
     return movesScores;
 }
 
-int TMoveOrdering::CalcMoveOrder(const lczero::Move& move, size_t ply) const {
+int TMoveOrdering::CalcMoveOrder(
+    const lczero::Move& move, size_t ply, const int* seeValue) const {
     int score = 0;
 
     // Hash move
@@ -47,7 +54,8 @@ int TMoveOrdering::CalcMoveOrder(const lczero::Move& move, size_t ply) const {
 
     // Captures
     if (IsCapture(Position, move)) {
-        int captureValue = EvaluateCaptureSEE(Position, move);
+        const int captureValue =
+            seeValue ? *seeValue : EvaluateCaptureSEE(Position, move);
         score += 2000 + captureValue;
     }
 
@@ -65,17 +73,13 @@ int TMoveOrdering::CalcMoveOrder(const lczero::Move& move, size_t ply) const {
         return -score;
     }
 
-    // History heuristics and counter moves
+    // Quiets are ordered by their bounded history score (below killers),
+    // with a bonus for the counter move to the previous move
     if (HistoryHeuristics) {
-        EPieceType fromPiece = GetPieceType(Position.GetBoard(), move.from());
-        int side = Position.IsBlackToMove();
-        int historyScore = HistoryHeuristics->Get(side, fromPiece, move);
-        if (historyScore != 0) {
-            score += 500 + historyScore;
-        }
-        auto counterMove = HistoryHeuristics->GetCounterMove(PrevMove);
-        if (move == counterMove) {
-            score += 100;
+        const int side = Position.IsBlackToMove();
+        score += HistoryHeuristics->Get(side, move);
+        if (move == HistoryHeuristics->GetCounterMove(PrevMove)) {
+            score += 300;
         }
     }
 

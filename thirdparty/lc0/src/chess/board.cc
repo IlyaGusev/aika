@@ -425,6 +425,73 @@ void InitializeMagicBitboards() {
                     kBishopDirections);
 }
 
+MoveList ChessBoard::GenerateCaptures() const {
+  MoveList result;
+  result.reserve(16);
+  const BitBoard occupied = our_pieces_ | their_pieces_;
+  for (auto source : our_pieces_) {
+    // King (castling is never a capture)
+    if (source == our_king_) {
+      for (const auto& delta : kKingMoves) {
+        const auto dst_row = source.row() + delta.first;
+        const auto dst_col = source.col() + delta.second;
+        if (!BoardSquare::IsValid(dst_row, dst_col)) continue;
+        const BoardSquare destination(dst_row, dst_col);
+        if (!their_pieces_.get(destination)) continue;
+        if (IsUnderAttack(destination)) continue;
+        result.emplace_back(source, destination);
+      }
+      continue;
+    }
+    bool processed_piece = false;
+    // Rook (and queen)
+    if (rooks_.get(source)) {
+      processed_piece = true;
+      for (const auto& destination :
+           GetRookAttacks(source, occupied) & their_pieces_) {
+        result.emplace_back(source, destination);
+      }
+    }
+    // Bishop (and queen)
+    if (bishops_.get(source)) {
+      processed_piece = true;
+      for (const auto& destination :
+           GetBishopAttacks(source, occupied) & their_pieces_) {
+        result.emplace_back(source, destination);
+      }
+    }
+    if (processed_piece) continue;
+    // Pawns.
+    if ((pawns_ & kPawnMask).get(source)) {
+      for (auto direction : {-1, 1}) {
+        const auto dst_row = source.row() + 1;
+        const auto dst_col = source.col() + direction;
+        if (dst_col < 0 || dst_col >= 8) continue;
+        const BoardSquare destination(dst_row, dst_col);
+        if (their_pieces_.get(destination)) {
+          if (dst_row == RANK_8) {
+            for (auto promotion : kPromotions) {
+              result.emplace_back(source, destination, promotion);
+            }
+          } else {
+            result.emplace_back(source, destination);
+          }
+        } else if (dst_row == RANK_6 && pawns_.get(RANK_8, dst_col)) {
+          // En passant.
+          result.emplace_back(source, destination);
+        }
+      }
+      continue;
+    }
+    // Knight.
+    for (const auto destination :
+         kKnightAttacks[source.as_int()] & their_pieces_) {
+      result.emplace_back(source, destination);
+    }
+  }
+  return result;
+}
+
 MoveList ChessBoard::GeneratePseudolegalMoves() const {
   MoveList result;
   result.reserve(60);
@@ -692,6 +759,14 @@ bool ChessBoard::ApplyMove(Move move) {
     }
   }
   return reset_50_moves;
+}
+
+BitBoard ChessBoard::GetRookAttacksBB(BoardSquare square, BitBoard occupancy) {
+  return GetRookAttacks(square, occupancy);
+}
+
+BitBoard ChessBoard::GetBishopAttacksBB(BoardSquare square, BitBoard occupancy) {
+  return GetBishopAttacks(square, occupancy);
 }
 
 // Can check only on your own squares

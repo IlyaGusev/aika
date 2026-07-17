@@ -83,11 +83,17 @@ class ChessBoard {
   // Generates list of possible moves for "ours" (white), but may leave king
   // under check.
   MoveList GeneratePseudolegalMoves() const;
+  // Pseudolegal captures only (including en passant and capture-promotions);
+  // subset of GeneratePseudolegalMoves for quiescence search.
+  MoveList GenerateCaptures() const;
   // Applies the move. (Only for "ours" (white)). Returns true if 50 moves
   // counter should be removed.
   bool ApplyMove(Move move);
   // Get smallest attacker on square.
   std::optional<BoardSquare> GetSmallestAttacker(BoardSquare square) const;
+  // Magic-bitboard slider attacks from a square for a given occupancy.
+  static BitBoard GetRookAttacksBB(BoardSquare square, BitBoard occupancy);
+  static BitBoard GetBishopAttacksBB(BoardSquare square, BitBoard occupancy);
   // Checks if the square is under attack from "theirs" (black).
   bool IsUnderAttack(BoardSquare square) const;
   // Generates the king attack info used for legal move detection.

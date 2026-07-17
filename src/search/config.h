@@ -21,6 +21,12 @@ struct TSearchConfig {
     int LMRReduction = 1;
     bool EnableKillers = true;
     bool EnableHH = false;
+    // Root budgets below this keep conservative pruning (exact tactics);
+    // deeper budgets enable the aggressive stack
+    int AggressiveDepthMin = 12;
+    // Soft cap for iterative deepening: no new iteration starts after this
+    // many ms (0 = off); the running iteration always completes
+    int TimeLimitMs = 0;
     bool EnableSEESkip = false;
     int SEESkipQuietMargin = 0;
 

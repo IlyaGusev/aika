@@ -32,12 +32,15 @@ public:
         , HistoryHeuristics(historyHeuristics)
     {}
 
+    // seeValues, when given, holds a precomputed SEE value per move and
+    // spares Order a second SEE pass for captures
     std::vector<TMoveInfo> Order(
         const lczero::MoveList& moves,
         size_t ply,
-        bool printScores = false
+        bool printScores = false,
+        const std::vector<int>* seeValues = nullptr
     ) const;
 
 private:
-    int CalcMoveOrder(const lczero::Move& move, size_t ply) const;
+    int CalcMoveOrder(const lczero::Move& move, size_t ply, const int* seeValue) const;
 };

@@ -95,15 +95,43 @@ Strategies are tried in order in `TController::MakeMove()` until one returns a m
 - Transposition table: fixed-size (2^21 entries) hash-indexed array with
   depth-preferred same-position replacement; entries cache the static eval
   (`src/search/transposition_table.h`, header-only)
-- History heuristics (`src/search/history_heuristics.h`)
+- History heuristics (`src/search/history_heuristics.h`): bounded butterfly
+  from-to table with gravity updates and maluses for quiets tried before a
+  cutoff; ordering reads it when `EnableHH` is set OR the aggressive stack
+  is active (it is what makes the deep reductions safe)
 - Killer moves (`src/search/killer_moves.h`)
-- Late Move Reduction (LMR)
-- Null move pruning
-- Reverse futility pruning at depth ≤ 2 (gated on `enable_null_move`) and
-  futility pruning of quiet non-checking moves at depth 1 (gated on
-  `enable_lmr`) — gated on those flags so the `alpha_beta` equivalence test,
-  which runs with them off, stays exact
-- Static Exchange Evaluation (SEE) (`src/search/see.h`)
+- Late Move Reduction (LMR): log-scaled reduction table when the root budget
+  is deep (see below), fixed `lmr_reduction` otherwise; PV nodes get one ply
+  less reduction
+- Null move pruning (reduction grows with depth in deep mode)
+- Reverse futility pruning, futility pruning of quiet non-checking moves,
+  late move pruning and internal iterative reduction — all gated on the
+  existing feature flags so the `alpha_beta` equivalence test, which runs
+  with them off, stays exact
+- Root-budget-scaled aggressiveness (`TSearchConfig::AggressiveDepthMin`,
+  default 12): searches with root depth below it keep the original
+  conservative pruning — exact tactics and full strength at the depths the
+  EPD suites assert (custom_epd 5–11 hard, Bratko-Kopec at 11 soft) — while
+  deeper budgets enable the aggressive stack that makes depth-12 search
+  feasible: history-ordered quiets, log LMR conditioned on
+  killers/counters/history, LMP, deep futility/RFP, IIR. Validated by
+  equal-time self-play (250 ms/move, 116 games, 2026-07-17): aggressive
+  beat conservative by ~+82 Elo [+44, +123]. Tuning constants live at the
+  top of `search_strategy.cpp`; Custom 15 (mate in four) is the most
+  fragile custom_epd position — re-run custom_epd after any pruning change,
+  and re-run a self-play match (scratchpad selfplay harness: fixed openings
+  both colors, soft TimeLimitMs, adjudication) after any sizable one
+- Static Exchange Evaluation: bitboard swap-off implementation, no board
+  copies (`src/search/see.cpp`); qsearch computes SEE once per capture and
+  reuses it for ordering
+- Incremental PST evaluation: `TSearchNode` carries a `TPstState` updated
+  per move (`ApplyMovePst` in `src/pst.cpp`), no full-board rescan
+- Deferred move generation in `Search`: with PST eval on, a trusted TT move
+  is staged and searched before `GenerateLegalMoves` is ever called; qsearch
+  uses `ChessBoard::GenerateCaptures()` (added to vendored lc0) when not in
+  check
+- Check status is propagated parent→child (`TSearchNode::InCheckFlag`) via a
+  conservative `mayGiveCheck` prefilter, so most nodes skip the attack probe
 
 **TSearchConfig** (`src/search/config.h`) controls search features via JSON:
 - `depth`: Main search depth
@@ -115,7 +143,7 @@ Strategies are tried in order in `TController::MakeMove()` until one returns a m
 - `enable_lmr`: Toggle late move reduction (plus `lmr_min_move_number`, `lmr_min_ply`, `lmr_min_depth`, `lmr_reduction`)
 - `enable_killers`: Toggle killer move heuristic
 
-Note: `EnableHH` (history heuristics) and `EnableSEESkip`/`SEESkipQuietMargin` exist as struct fields but are NOT parsed from JSON in `src/search/config.cpp` — they can only be set programmatically (e.g. in tests).
+Note: `EnableHH` (history heuristics), `EnableSEESkip`/`SEESkipQuietMargin`, `AggressiveDepthMin` (root depth enabling the aggressive pruning stack, default 12) and `TimeLimitMs` (soft iterative-deepening time cap, default off) exist as struct fields but are NOT parsed from JSON in `src/search/config.cpp` — they can only be set programmatically (e.g. in tests or the self-play harness).
 
 ### Evaluation
 
@@ -170,7 +198,7 @@ CI (`.github/workflows/cpp.yml`) builds and runs `make test` on every push/PR to
   - `bratko_kopec`: strength suite, 12 of 24 positions enabled in the EPD; misses are soft warnings
   - `time_benchmark` / `deterministic_benchmark`: depth-8 all-features search on a fixed FEN; time and node count are BOOST_WARN only (never fail the suite)
 
-**Baselines (2026-07-16, after the search optimization pass, this machine):** all suites pass with `MAX_DEPTH = 12` (raised from 8 after the pass): time_benchmark / deterministic_benchmark run at depth 12 (~52 s, 24,762,226 nodes — the 1 s warn is aspirational again; depth 8 was ~740 ms / 324,781 nodes, vs 41.7 s / 11.3M nodes at commit b9ffd15), custom_epd at depths 5–11, Bratko-Kopec 9/12 at depth 11. Full search suite ~4 min. perft(6) ~53 s. Server with default `search_config.json` (depth 6) answers `/make_move` in 70–220 ms. This is a shared machine — wall times can inflate ~1.5× under other users' load; node counts are deterministic.
+**Baselines (2026-07-17, after the second search optimization pass, this machine):** all suites pass with `MAX_DEPTH = 12`: time_benchmark / deterministic_benchmark run at depth 12 in ~0.6 s, 277,749 nodes (the 1 s warn now passes; before the pass it was ~52 s / 24.76M nodes), custom_epd at depths 5–11, Bratko-Kopec 9/12 at depth 11 (same as before the pass — depths ≤ 11 run the original conservative search). Equal-time self-play (250 ms/move): aggressive stack +82 Elo [+44, +123] vs conservative over 116 games. Full search suite a few minutes (custom_epd/Bratko-Kopec depths ≤ 11 are conservative and dominate it). perft(6) ~53 s. Server with default `search_config.json` (depth 6) answers `/make_move` in 70–220 ms. This is a shared machine — wall times can inflate ~1.5× under other users' load; node counts are deterministic.
 
 ## Code Style
 

@@ -33,6 +33,10 @@ private:
 public:
     TTranspositionTable() : Data(SIZE) {}
 
+    void Prefetch(uint64_t hash) const {
+        __builtin_prefetch(&Data[hash & (SIZE - 1)]);
+    }
+
     const TEntry* Find(uint64_t hash) const {
         const TEntry& entry = Data[hash & (SIZE - 1)];
         if (entry.Type != ENodeType::Unknown && entry.Hash == hash) {
